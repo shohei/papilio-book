@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="E:/cq/papilio/ise/blink_led/test_blink_led_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="test_blink_led" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="4" />
+   <wvobject fp_name="/test_blink_led/led" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">led</obj_property>
+      <obj_property name="ObjectShortName">led</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_blink_led/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_blink_led/resetb" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">resetb</obj_property>
+      <obj_property name="ObjectShortName">resetb</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_blink_led/uut/cnt" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">cnt[23:0]</obj_property>
+      <obj_property name="ObjectShortName">cnt[23:0]</obj_property>
+   </wvobject>
+</wave_config>

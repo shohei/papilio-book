@@ -1,0 +1,223 @@
+11:51:57 **** Incremental Build of configuration Debug for project hello_world_sw1 ****
+make all 
+make: `all' Ç…ëŒÇµÇƒçsÇ§Ç◊Ç´éñÇÕÇ†ÇËÇ‹ÇπÇÒ.
+11:52:19 **** Auto Build of configuration Debug for project hello_world_sw1 ****
+make all 
+Building file: ../src/helloworld.c
+Invoking: MicroBlaze gcc compiler
+mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -I../../hello_world_sw1_bsp/mb_mcs/include -mno-xl-reorder -mlittle-endian -mcpu=v8.40.a -mxl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/helloworld.d" -MT"src/helloworld.d" -o "src/helloworld.o" "../src/helloworld.c"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+Finished building: ../src/helloworld.c
+ 
+Building target: hello_world_sw1.elf
+Invoking: MicroBlaze gcc linker
+mb-gcc -Wl,-T -Wl,../src/lscript.ld -L../../hello_world_sw1_bsp/mb_mcs/lib -mlittle-endian -mcpu=v8.40.a -mxl-soft-mul -Wl,--no-relax -Wl,--gc-sections -o "hello_world_sw1.elf"  ./src/helloworld.o ./src/platform.o   -Wl,--start-group,-lxil,-lgcc,-lc,--end-group
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+Finished building target: hello_world_sw1.elf
+ 
+Invoking: MicroBlaze Print Size
+mb-size hello_world_sw1.elf  |tee "hello_world_sw1.elf.size"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+   text	   data	    bss	    dec	    hex	filename
+   7330	    348	   2106	   9784	   2638	hello_world_sw1.elf
+Finished building: hello_world_sw1.elf.size
+ 
+Invoking: Xilinx ELF Check
+elfcheck hello_world_sw1.elf -hw ../../mb_mcs_hw/system.xml -pe mb_mcs  |tee "hello_world_sw1.elf.elfcheck"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+elfcheck
+Xilinx EDK 14.7 Build EDK_P.20131013
+Copyright (c) 1995-2012 Xilinx, Inc.  All rights reserved.
+
+Command Line: elfcheck -hw ../../mb_mcs_hw/system.xml -pe mb_mcs
+hello_world_sw1.elf 
+
+ELF file	: hello_world_sw1.elf
+elfcheck passed.
+Finished building: hello_world_sw1.elf.elfcheck
+ 
+11:53:25 **** Auto Build of configuration Debug for project hello_world_sw1 ****
+make all 
+Building file: ../src/helloworld.c
+Invoking: MicroBlaze gcc compiler
+mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -I../../hello_world_sw1_bsp/mb_mcs/include -mno-xl-reorder -mlittle-endian -mcpu=v8.40.a -mxl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/helloworld.d" -MT"src/helloworld.d" -o "src/helloworld.o" "../src/helloworld.c"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+Finished building: ../src/helloworld.c
+ 
+Building target: hello_world_sw1.elf
+Invoking: MicroBlaze gcc linker
+mb-gcc -Wl,-T -Wl,../src/lscript.ld -L../../hello_world_sw1_bsp/mb_mcs/lib -mlittle-endian -mcpu=v8.40.a -mxl-soft-mul -Wl,--no-relax -Wl,--gc-sections -o "hello_world_sw1.elf"  ./src/helloworld.o ./src/platform.o   -Wl,--start-group,-lxil,-lgcc,-lc,--end-group
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+Finished building target: hello_world_sw1.elf
+ 
+Invoking: MicroBlaze Print Size
+mb-size hello_world_sw1.elf  |tee "hello_world_sw1.elf.size"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+   text	   data	    bss	    dec	    hex	filename
+   7330	    348	   2106	   9784	   2638	hello_world_sw1.elf
+Finished building: hello_world_sw1.elf.size
+ 
+Invoking: Xilinx ELF Check
+elfcheck hello_world_sw1.elf -hw ../../mb_mcs_hw/system.xml -pe mb_mcs  |tee "hello_world_sw1.elf.elfcheck"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+elfcheck
+Xilinx EDK 14.7 Build EDK_P.20131013
+Copyright (c) 1995-2012 Xilinx, Inc.  All rights reserved.
+
+Command Line: elfcheck -hw ../../mb_mcs_hw/system.xml -pe mb_mcs
+hello_world_sw1.elf 
+
+ELF file	: hello_world_sw1.elf
+elfcheck passed.
+Finished building: hello_world_sw1.elf.elfcheck
+ 
+11:59:59 **** Auto Build of configuration Debug for project hello_world_sw1 ****
+make all 
+Building file: ../src/helloworld.c
+Invoking: MicroBlaze gcc compiler
+mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -I../../hello_world_sw1_bsp/mb_mcs/include -mno-xl-reorder -mlittle-endian -mcpu=v8.40.a -mxl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/helloworld.d" -MT"src/helloworld.d" -o "src/helloworld.o" "../src/helloworld.c"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+Finished building: ../src/helloworld.c
+ 
+Building target: hello_world_sw1.elf
+Invoking: MicroBlaze gcc linker
+mb-gcc -Wl,-T -Wl,../src/lscript.ld -L../../hello_world_sw1_bsp/mb_mcs/lib -mlittle-endian -mcpu=v8.40.a -mxl-soft-mul -Wl,--no-relax -Wl,--gc-sections -o "hello_world_sw1.elf"  ./src/helloworld.o ./src/platform.o   -Wl,--start-group,-lxil,-lgcc,-lc,--end-group
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+Finished building target: hello_world_sw1.elf
+ 
+Invoking: MicroBlaze Print Size
+mb-size hello_world_sw1.elf  |tee "hello_world_sw1.elf.size"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+   text	   data	    bss	    dec	    hex	filename
+   7330	    348	   2106	   9784	   2638	hello_world_sw1.elf
+Finished building: hello_world_sw1.elf.size
+ 
+Invoking: Xilinx ELF Check
+elfcheck hello_world_sw1.elf -hw ../../mb_mcs_hw/system.xml -pe mb_mcs  |tee "hello_world_sw1.elf.elfcheck"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+elfcheck
+Xilinx EDK 14.7 Build EDK_P.20131013
+Copyright (c) 1995-2012 Xilinx, Inc.  All rights reserved.
+
+Command Line: elfcheck -hw ../../mb_mcs_hw/system.xml -pe mb_mcs
+hello_world_sw1.elf 
+
+ELF file	: hello_world_sw1.elf
+elfcheck passed.
+Finished building: hello_world_sw1.elf.elfcheck
+ 
+12:00:48 **** Auto Build of configuration Debug for project hello_world_sw1 ****
+make all 
+Building file: ../src/helloworld.c
+Invoking: MicroBlaze gcc compiler
+mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -I../../hello_world_sw1_bsp/mb_mcs/include -mno-xl-reorder -mlittle-endian -mcpu=v8.40.a -mxl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/helloworld.d" -MT"src/helloworld.d" -o "src/helloworld.o" "../src/helloworld.c"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+Finished building: ../src/helloworld.c
+ 
+Building target: hello_world_sw1.elf
+Invoking: MicroBlaze gcc linker
+mb-gcc -Wl,-T -Wl,../src/lscript.ld -L../../hello_world_sw1_bsp/mb_mcs/lib -mlittle-endian -mcpu=v8.40.a -mxl-soft-mul -Wl,--no-relax -Wl,--gc-sections -o "hello_world_sw1.elf"  ./src/helloworld.o ./src/platform.o   -Wl,--start-group,-lxil,-lgcc,-lc,--end-group
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+Finished building target: hello_world_sw1.elf
+ 
+Invoking: MicroBlaze Print Size
+mb-size hello_world_sw1.elf  |tee "hello_world_sw1.elf.size"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+   text	   data	    bss	    dec	    hex	filename
+   7330	    348	   2106	   9784	   2638	hello_world_sw1.elf
+Finished building: hello_world_sw1.elf.size
+ 
+Invoking: Xilinx ELF Check
+elfcheck hello_world_sw1.elf -hw ../../mb_mcs_hw/system.xml -pe mb_mcs  |tee "hello_world_sw1.elf.elfcheck"
+cygwin warning:
+  MS-DOS style path detected: E:\cq\papilio\mb_mcs_top\sdk\workspace\hello_world_sw1\Debug
+  Preferred POSIX equivalent is: /cygdrive/e/cq/papilio/mb_mcs_top/sdk/workspace/hello_world_sw1/Debug
+  CYGWIN environment variable option "nodosfilewarning" turns off this warning.
+  Consult the user's guide for more details about POSIX paths:
+    http://cygwin.com/cygwin-ug-net/using.html#using-pathnames
+elfcheck
+Xilinx EDK 14.7 Build EDK_P.20131013
+Copyright (c) 1995-2012 Xilinx, Inc.  All rights reserved.
+
+Command Line: elfcheck -hw ../../mb_mcs_hw/system.xml -pe mb_mcs
+hello_world_sw1.elf 
+
+ELF file	: hello_world_sw1.elf
+elfcheck passed.
+Finished building: hello_world_sw1.elf.elfcheck
+ 

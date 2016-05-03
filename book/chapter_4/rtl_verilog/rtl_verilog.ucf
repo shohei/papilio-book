@@ -1,0 +1,14 @@
+
+# PlanAhead Generated physical constraints 
+
+NET "clk" LOC = P114; #SW0
+NET "reset" LOC = P115; #SW1
+NET "q" LOC = P126;  #LED2
+NET "d" LOC = P116;  #SW2;
+NET "s" LOC = P117;  #SW3
+NET "sel_o" LOC = P127; #LED3
+NET "a" LOC = P118; #SW4
+NET "b" LOC = P119; #SW5
+NET "x" LOC = P131; #LED4
+NET "y" LOC = P132; #LED5
+NET "clk" CLOCK_DEDICATED_ROUTE = FALSE; 

@@ -1,0 +1,888 @@
+diff -urN pymite-09.org/src/platform/ZPU/led.py pymite-09/src/platform/ZPU/led.py
+--- pymite-09.org/src/platform/ZPU/led.py	1970-01-01 09:00:00.000000000 +0900
++++ pymite-09/src/platform/ZPU/led.py	2014-05-01 19:20:11.000000000 +0900
+@@ -0,0 +1,37 @@
++def on():
++	"""__NATIVE__
++	extern void plat_led_on(void);
++	plat_led_on();
++	return 0;
++	"""
++	pass
++
++def off():
++	"""__NATIVE__
++	extern void plat_led_off(void);
++	plat_led_off();
++	return 0;
++	"""
++	pass
++
++def WaitMs(ms):
++	"""__NATIVE__
++	extern void plat_wait_ms(int32_t);
++	PmReturn_t retval = PM_RET_OK;
++	pPmObj_t pn;
++	int32_t n;
++
++	pn = NATIVE_GET_LOCAL(0);
++	if (OBJ_GET_TYPE(pn) != OBJ_TYPE_INT)
++	{
++		PM_RAISE(retval, PM_RET_EX_TYPE);
++		return retval;
++	}
++	n = ((pPmInt_t)pn)->val;
++
++	plat_wait_ms(n);
++	return 0;
++	"""
++	pass
++
++# :mode=c:
+diff -urN pymite-09.org/src/platform/ZPU/main.c pymite-09/src/platform/ZPU/main.c
+--- pymite-09.org/src/platform/ZPU/main.c	1970-01-01 09:00:00.000000000 +0900
++++ pymite-09/src/platform/ZPU/main.c	2014-04-30 13:12:54.000000000 +0900
+@@ -0,0 +1,18 @@
++
++#include "pm.h"
++
++extern unsigned char usrlib_img[];
++
++int
++main(void)
++{
++    PmReturn_t retval;
++
++	retval = pm_init(MEMSPACE_PROG, usrlib_img);
++    PM_RETURN_IF_ERROR(retval);
++
++    /* Run the sample program */
++    retval = pm_run((uint8_t *)"main");
++
++    return (int)retval;
++}
+diff -urN pymite-09.org/src/platform/ZPU/main.py pymite-09/src/platform/ZPU/main.py
+--- pymite-09.org/src/platform/ZPU/main.py	1970-01-01 09:00:00.000000000 +0900
++++ pymite-09/src/platform/ZPU/main.py	2014-05-04 13:26:54.000000000 +0900
+@@ -0,0 +1,18 @@
++#import sys
++import led
++
++print "Hello python on ZPU!!"
++i=0
++while i<10:
++	print "%s:  %d" % ("Loop" , i )
++	led.on()
++	led.WaitMs(500)			# Sleep 500msec.
++	led.off()
++	led.WaitMs(500)			# Sleep 500msec.
++	i=i+1
++
++print "done!!"
++import ipm
++ipm.ipm()
++
++# :mode=c:
+diff -urN pymite-09.org/src/platform/ZPU/obj/Makefile pymite-09/src/platform/ZPU/obj/Makefile
+--- pymite-09.org/src/platform/ZPU/obj/Makefile	1970-01-01 09:00:00.000000000 +0900
++++ pymite-09/src/platform/ZPU/obj/Makefile	2014-05-01 20:02:30.000000000 +0900
+@@ -0,0 +1,118 @@
++
++# ==== TARGET BOARD =====================
++# BOARD = sim
++IPM = true
++
++# ==== GNU PATH =====================
++GNUPATH    := /zpu/papilio-zap-ide/hardware/tools/zpu
++GNUPREFIX  := $(GNUPATH)/bin/zpu-elf-
++CRTOBJPATH := $(GNUPATH)/lib/gcc/zpu-elf/3.4.2/
++
++AS := $(GNUPREFIX)gcc
++CC := $(GNUPREFIX)gcc
++LD := $(GNUPREFIX)gcc
++AR := $(GNUPREFIX)ar
++OC := $(GNUPREFIX)objcopy
++OD := $(GNUPREFIX)objdump
++SZ := $(GNUPREFIX)size
++
++# ==== source file dependencies (generated automatically) =====================
++DEPS = Dependencies
++export DEPENDENCIES_OUTPUT := $(DEPS)
++
++# #### target program name
++TARGET = pymite_test
++
++# #### source path
++PYTOP_DIR  = ../../..
++SRC_DIR    = ..
++COMMON_DIR = $(PYTOP_DIR)/../../common
++PYVM_DIR   = $(PYTOP_DIR)/vm
++
++# #### common object file
++COMMON_OBJS  = start.o crt-c.o
++## COMMON_OBJS += setjmp.o
++COMMON_OBJS += syscalls.o
++
++ifeq ($(BOARD), sim)
++    COMMON_OBJS += boot4sim.o
++    COMMON_OBJS += divmod.o
++endif
++
++# #### C runtime object file
++CRTOBJS  = $(CRTOBJPATH)/crtbegin.o
++CRTOBJS += $(CRTOBJPATH)/crtend.o
++CRTOBJS += $(CRTOBJPATH)/crtn.o
++
++# #### user program object file
++OBJS  = main.o plat.o
++OBJS += $(TARGET)_nat.o
++OBJS += $(TARGET)_img.o
++OBJS += pmstdlib_nat.o pmstdlib_img.o
++
++OBJS += $(COMMON_OBJS)
++
++LIBS = -L$(PYVM_DIR)/ZPU -lpmvm -lm
++
++# #### source search path
++VPATH = $(SRC_DIR):$(COMMON_DIR)
++
++# #### compile option
++CPPFLAGS  = -DZPU -DZPUINO_ACCEL
++CPPFLAGS += -I$(SRC_DIR) -I$(COMMON_DIR) -I$(PYVM_DIR)
++CFLAGS    = -c -Wall $(CPPFLAGS)
++CFLAGS   += -O2
++CFLAGS   += -fno-reorder-blocks  -fno-reorder-blocks-and-partition -fno-prefetch-loop-arrays  -fno-gcse
++CFLAGS   += -ffunction-sections -fdata-sections -nostartfiles -mmult -mdiv -mno-callpcrel -mno-pushspadd -mno-poppcrel
++LDFLAGS   = -O2 -nostartfiles -Wl,-T -Wl,$(COMMON_DIR)/zpuino.lds -Wl,--relax -Wl,--gc-sections -phi
++LDFLAGS2  = $(LIBS) $(CRTOBJS)
++ASFLAGS   = -c -g -assembler-with-cpp $(CPPFLAGS) -D_ASM_
++OCFLAGS   = -O binary
++
++
++
++PMIMGCREATOR    := $(PYTOP_DIR)/tools/pmImgCreator.py
++PMGENPMFEATURES := $(PYTOP_DIR)/tools/pmGenPmFeatures.py
++PM_USR_SOURCES   = $(SRC_DIR)/main.py $(SRC_DIR)/led.py
++
++PMSTDLIB_SOURCES = $(PYTOP_DIR)/lib/list.py \
++                   $(PYTOP_DIR)/lib/dict.py \
++                   $(PYTOP_DIR)/lib/__bi.py \
++                   $(PYTOP_DIR)/lib/sys.py \
++                   $(PYTOP_DIR)/lib/string.py
++ifeq ($(IPM),true)
++	PMSTDLIB_SOURCES += $(PYTOP_DIR)/lib/ipm.py
++endif
++
++
++
++all: $(TARGET).bin
++
++$(TARGET).bin: $(TARGET).elf
++	$(OC) $(OCFLAGS)  $< $@
++	$(OD) -D  $< > $(TARGET).dis
++	$(OD) -t  $< > $(TARGET).sym
++
++$(TARGET).elf: $(OBJS)
++	$(LD) $(LDFLAGS)  $^ $(LDFLAGS2) -o $@
++
++
++$(TARGET)_nat.c $(TARGET)_img.c: $(PM_USR_SOURCES) $(SRC_DIR)/pmfeatures.py
++	$(PMIMGCREATOR) -f $(SRC_DIR)/pmfeatures.py -c -u -o $(TARGET)_img.c --native-file=$(TARGET)_nat.c $(PM_USR_SOURCES)
++
++pmstdlib_nat.c pmstdlib_img.c: $(PMSTDLIB_SOURCES) $(SRC_DIR)/pmfeatures.py
++	$(PMIMGCREATOR) -f $(SRC_DIR)/pmfeatures.py -c -s -o pmstdlib_img.c --native-file=pmstdlib_nat.c $(PMSTDLIB_SOURCES)
++
++%.o: %.c
++	$(CC) $(CFLAGS) $< -o $@
++
++%.o: %.S
++	$(AS) $(ASFLAGS) $< -o $@
++
++clean:
++	rm -f $(TARGET).elf $(TARGET).bin $(TARGET).dis $(TARGET).sym $(OBJS) $(DEPS)
++	rm -f $(TARGET)_nat.c $(TARGET)_img.c pmstdlib_nat.c pmstdlib_img.c
++
++# ==== generate dependencies ==================================================
++$(DEPS): ; touch $(DEPS)
++include $(DEPS)
+diff -urN pymite-09.org/src/platform/ZPU/obj.sim/Makefile pymite-09/src/platform/ZPU/obj.sim/Makefile
+--- pymite-09.org/src/platform/ZPU/obj.sim/Makefile	1970-01-01 09:00:00.000000000 +0900
++++ pymite-09/src/platform/ZPU/obj.sim/Makefile	2014-05-01 20:01:37.000000000 +0900
+@@ -0,0 +1,118 @@
++
++# ==== TARGET BOARD =====================
++BOARD = sim
++IPM = true
++
++# ==== GNU PATH =====================
++GNUPATH    := /zpu/papilio-zap-ide/hardware/tools/zpu
++GNUPREFIX  := $(GNUPATH)/bin/zpu-elf-
++CRTOBJPATH := $(GNUPATH)/lib/gcc/zpu-elf/3.4.2/
++
++AS := $(GNUPREFIX)gcc
++CC := $(GNUPREFIX)gcc
++LD := $(GNUPREFIX)gcc
++AR := $(GNUPREFIX)ar
++OC := $(GNUPREFIX)objcopy
++OD := $(GNUPREFIX)objdump
++SZ := $(GNUPREFIX)size
++
++# ==== source file dependencies (generated automatically) =====================
++DEPS = Dependencies
++export DEPENDENCIES_OUTPUT := $(DEPS)
++
++# #### target program name
++TARGET = pymite_test
++
++# #### source path
++PYTOP_DIR  = ../../..
++SRC_DIR    = ..
++COMMON_DIR = $(PYTOP_DIR)/../../common
++PYVM_DIR   = $(PYTOP_DIR)/vm
++
++# #### common object file
++COMMON_OBJS  = start.o crt-c.o
++## COMMON_OBJS += setjmp.o
++COMMON_OBJS += syscalls.o
++
++ifeq ($(BOARD), sim)
++    COMMON_OBJS += boot4sim.o
++    COMMON_OBJS += divmod.o
++endif
++
++# #### C runtime object file
++CRTOBJS  = $(CRTOBJPATH)/crtbegin.o
++CRTOBJS += $(CRTOBJPATH)/crtend.o
++CRTOBJS += $(CRTOBJPATH)/crtn.o
++
++# #### user program object file
++OBJS  = main.o plat.o
++OBJS += $(TARGET)_nat.o
++OBJS += $(TARGET)_img.o
++OBJS += pmstdlib_nat.o pmstdlib_img.o
++
++OBJS += $(COMMON_OBJS)
++
++LIBS = -L$(PYVM_DIR)/ZPU -lpmvm -lm
++
++# #### source search path
++VPATH = $(SRC_DIR):$(COMMON_DIR)
++
++# #### compile option
++CPPFLAGS  = -DZPU -DZPUINO_ACCEL
++CPPFLAGS += -I$(SRC_DIR) -I$(COMMON_DIR) -I$(PYVM_DIR)
++CFLAGS    = -c -Wall $(CPPFLAGS)
++CFLAGS   += -O2
++CFLAGS   += -fno-reorder-blocks  -fno-reorder-blocks-and-partition -fno-prefetch-loop-arrays  -fno-gcse
++CFLAGS   += -ffunction-sections -fdata-sections -nostartfiles -mmult -mdiv -mno-callpcrel -mno-pushspadd -mno-poppcrel
++LDFLAGS   = -O2 -nostartfiles -Wl,-T -Wl,$(COMMON_DIR)/zpuino.lds -Wl,--relax -Wl,--gc-sections -phi
++LDFLAGS2  = $(LIBS) $(CRTOBJS)
++ASFLAGS   = -c -g -assembler-with-cpp $(CPPFLAGS) -D_ASM_
++OCFLAGS   = -O binary
++
++
++
++PMIMGCREATOR    := $(PYTOP_DIR)/tools/pmImgCreator.py
++PMGENPMFEATURES := $(PYTOP_DIR)/tools/pmGenPmFeatures.py
++PM_USR_SOURCES   = $(SRC_DIR)/main.py $(SRC_DIR)/led.py
++
++PMSTDLIB_SOURCES = $(PYTOP_DIR)/lib/list.py \
++                   $(PYTOP_DIR)/lib/dict.py \
++                   $(PYTOP_DIR)/lib/__bi.py \
++                   $(PYTOP_DIR)/lib/sys.py \
++                   $(PYTOP_DIR)/lib/string.py
++ifeq ($(IPM),true)
++	PMSTDLIB_SOURCES += $(PYTOP_DIR)/lib/ipm.py
++endif
++
++
++
++all: $(TARGET).bin
++
++$(TARGET).bin: $(TARGET).elf
++	$(OC) $(OCFLAGS)  $< $@
++	$(OD) -D  $< > $(TARGET).dis
++	$(OD) -t  $< > $(TARGET).sym
++
++$(TARGET).elf: $(OBJS)
++	$(LD) $(LDFLAGS)  $^ $(LDFLAGS2) -o $@
++
++
++$(TARGET)_nat.c $(TARGET)_img.c: $(PM_USR_SOURCES) $(SRC_DIR)/pmfeatures.py
++	$(PMIMGCREATOR) -f $(SRC_DIR)/pmfeatures.py -c -u -o $(TARGET)_img.c --native-file=$(TARGET)_nat.c $(PM_USR_SOURCES)
++
++pmstdlib_nat.c pmstdlib_img.c: $(PMSTDLIB_SOURCES) $(SRC_DIR)/pmfeatures.py
++	$(PMIMGCREATOR) -f $(SRC_DIR)/pmfeatures.py -c -s -o pmstdlib_img.c --native-file=pmstdlib_nat.c $(PMSTDLIB_SOURCES)
++
++%.o: %.c
++	$(CC) $(CFLAGS) $< -o $@
++
++%.o: %.S
++	$(AS) $(ASFLAGS) $< -o $@
++
++clean:
++	rm -f $(TARGET).elf $(TARGET).bin $(TARGET).dis $(TARGET).sym $(OBJS) $(DEPS)
++	rm -f $(TARGET)_nat.c $(TARGET)_img.c pmstdlib_nat.c pmstdlib_img.c
++
++# ==== generate dependencies ==================================================
++$(DEPS): ; touch $(DEPS)
++include $(DEPS)
+diff -urN pymite-09.org/src/platform/ZPU/obj.sim/device.map pymite-09/src/platform/ZPU/obj.sim/device.map
+--- pymite-09.org/src/platform/ZPU/obj.sim/device.map	1970-01-01 09:00:00.000000000 +0900
++++ pymite-09/src/platform/ZPU/obj.sim/device.map	2014-04-30 13:12:54.000000000 +0900
+@@ -0,0 +1,14 @@
++# Device map for ZPUino
++
++# Format is:
++# slot,devicename[,param1][,param2]...[,paramN]
++# parameter is key=value
++
++0,spi,binfile=../../../../../common/flash.bin,selectpin=48
++1,uart
++2,gpio
++3,timer
++4,intr
++7,crc16
++##8,vgazx
++10,vgacharram
+diff -urN pymite-09.org/src/platform/ZPU/plat.c pymite-09/src/platform/ZPU/plat.c
+--- pymite-09.org/src/platform/ZPU/plat.c	1970-01-01 09:00:00.000000000 +0900
++++ pymite-09/src/platform/ZPU/plat.c	2014-05-01 19:44:51.000000000 +0900
+@@ -0,0 +1,240 @@
++/** @file
++ * PyMite - A flyweight Python interpreter for 8-bit and larger microcontrollers.
++ * Copyright 2002 Dean Hall.  All rights reserved.
++ * PyMite is offered through one of two licenses: commercial or open-source.
++ * See the LICENSE file at the root of this package for licensing details.
++ *
++ * some sections based on code (C) COPYRIGHT 2008 STMicroelectronics
++ */
++
++#include <stdio.h>
++#include "pm.h"
++
++#include "papilio_zpu.h"
++
++extern void (*ivector)(void);
++extern void outbyte(int c);
++extern int inbyte(void);
++
++static void
++SetInterruptHandler(void (*pFunc)(void))
++{
++	ivector = pFunc;
++}
++
++
++static void
++InitIntervalTimer0(unsigned int msec, int interrupt)
++{
++	unsigned int	tmp;
++
++	tmp =  TMRPRES(0x07) 		// fclk/1024
++			 | BIT(TMRDIR)		// count up
++			 | BIT(TMRCCM)		// clear on compare match
++			 | BIT(TMREN);		// timer enable
++
++	if (interrupt) {
++		tmp |= BIT(TMRIEN);		// interrupt enable
++	}
++
++	// TOMER0 setting
++	TMR0CNT = 0;									// clear counter
++	TMR0CMP	= msec * (CLOCK_FREQ / 1024 / 1000);	// interval
++	TMR0CTL = tmp;
++}
++
++
++void
++IntHandler(void)
++{
++	PmReturn_t retval;
++
++//	INTRCTL = 0; 						// Globally disable interrupts
++
++	if (TMR0CTL & BIT(TMRINTR)) {
++		TMR0CTL &= ~BIT(TMRINTR);		// clear interrupt
++		retval = pm_vmPeriodic(10000);
++		PM_REPORT_IF_ERROR(retval);
++	}
++
++//	INTRCTL = 1; 						// Globally enable interrupts
++
++}
++
++void
++plat_led_on(void)
++{
++	GPIO_SETDATA(GPIO_LED);			// LED ON
++}
++
++void
++plat_led_off(void)
++{
++	GPIO_CLRDATA(GPIO_LED);			// LED ON
++}
++
++void
++plat_dummy(uint32_t *pCnt)
++{
++	static uint32_t	ccc = 0;
++	*pCnt = ccc++;
++}
++
++PmReturn_t
++plat_wait_ms(uint32_t ms)
++{
++	uint32_t	t;
++
++	t = pm_timerMsTicks + ms;
++	while (t > pm_timerMsTicks) {
++		;
++	}
++    return PM_RET_OK;
++}
++
++
++PmReturn_t
++plat_init(void)
++{
++
++	// non-buffered mode
++	setvbuf(stdout, 0, _IONBF, 0);
++
++	// setup interrupt handler
++	SetInterruptHandler(&IntHandler);
++
++	// GPIO init
++	GPIO_CLRDATA(GPIO_LED);				// LED OFF
++
++	// timer init
++	InitIntervalTimer0(10, 1);			// interval = 10msec
++
++	// interrupt enable
++	INTRMASK = BIT(INTRLINE_TIMER0);	// Enable timer 0 interrupt on mask
++	INTRCTL = 1; 						// Globally enable interrupts
++
++
++	return PM_RET_OK;
++}
++
++
++/* TODO: disable the peripherals and interrupts */
++PmReturn_t
++plat_deinit(void)
++{
++    return PM_RET_OK;
++}
++
++
++/*
++ * Gets a byte from the address in the designated memory space
++ * Post-increments *paddr.
++ */
++uint8_t
++plat_memGetByte(PmMemSpace_t memspace, uint8_t const **paddr)
++{
++    uint8_t b = 0;
++
++    switch (memspace)
++    {
++        case MEMSPACE_RAM:
++        case MEMSPACE_PROG:
++            b = **paddr;
++            *paddr += 1;
++            return b;
++        case MEMSPACE_EEPROM:
++        case MEMSPACE_SEEPROM:
++        case MEMSPACE_OTHER0:
++        case MEMSPACE_OTHER1:
++        case MEMSPACE_OTHER2:
++        case MEMSPACE_OTHER3:
++        default:
++            return 0;
++    }
++}
++
++
++PmReturn_t
++plat_getByte(uint8_t *b)
++{
++	*b = (uint8_t)inbyte();
++
++    return PM_RET_OK;
++}
++
++
++PmReturn_t
++plat_putByte(uint8_t b)
++{
++	outbyte(b);
++
++    return PM_RET_OK;
++}
++
++
++PmReturn_t
++plat_getMsTicks(uint32_t *r_ticks)
++{
++    /* TODO: make access atomic */
++    *r_ticks = pm_timerMsTicks;
++
++    return PM_RET_OK;
++}
++
++
++void
++plat_reportError(PmReturn_t result)
++{
++     /* Print error */
++    printf("Error:     0x%02X\n", result);
++    printf("  Release: 0x%02X\n", gVmGlobal.errVmRelease);
++    printf("  FileId:  0x%02X\n", gVmGlobal.errFileId);
++    printf("  LineNum: %d\n", gVmGlobal.errLineNum);
++
++    /* Print traceback */
++    {
++        pPmObj_t pframe;
++        pPmObj_t pstr;
++        PmReturn_t retval;
++
++        printf("Traceback (top first):\n");
++
++        /* Get the top frame */
++        pframe = (pPmObj_t)gVmGlobal.pthread->pframe;
++
++        /* If it's the native frame, print the native function name */
++        if (pframe == (pPmObj_t)&(gVmGlobal.nativeframe))
++        {
++
++            /* The last name in the names tuple of the code obj is the name */
++            retval = tuple_getItem((pPmObj_t)gVmGlobal.nativeframe.nf_func->
++                                   f_co->co_names, -1, &pstr);
++            if ((retval) != PM_RET_OK)
++            {
++                printf("  Unable to get native func name.\n");
++                return;
++            }
++            else
++            {
++                printf("  %s() __NATIVE__\n", ((pPmString_t)pstr)->val);
++            }
++
++            /* Get the frame that called the native frame */
++            pframe = (pPmObj_t)gVmGlobal.nativeframe.nf_back;
++        }
++
++        /* Print the remaining frame stack */
++        for (;
++             pframe != C_NULL;
++             pframe = (pPmObj_t)((pPmFrame_t)pframe)->fo_back)
++        {
++            /* The last name in the names tuple of the code obj is the name */
++            retval = tuple_getItem((pPmObj_t)((pPmFrame_t)pframe)->
++                                   fo_func->f_co->co_names, -1, &pstr);
++            if ((retval) != PM_RET_OK) break;
++
++            printf("  %s()\n", ((pPmString_t)pstr)->val);
++        }
++        printf("  <module>.\n");
++    }
++}
+diff -urN pymite-09.org/src/platform/ZPU/plat.h pymite-09/src/platform/ZPU/plat.h
+--- pymite-09.org/src/platform/ZPU/plat.h	1970-01-01 09:00:00.000000000 +0900
++++ pymite-09/src/platform/ZPU/plat.h	2014-04-30 13:12:54.000000000 +0900
+@@ -0,0 +1,7 @@
++#ifndef _PLAT_H_
++#define _PLAT_H_
++
++#define PM_FLOAT_BIG_ENDIAN
++#define PM_HEAP_SIZE			0x10000
++
++#endif /* _PLAT_H_ */
+diff -urN pymite-09.org/src/platform/ZPU/pmfeatures.h pymite-09/src/platform/ZPU/pmfeatures.h
+--- pymite-09.org/src/platform/ZPU/pmfeatures.h	1970-01-01 09:00:00.000000000 +0900
++++ pymite-09/src/platform/ZPU/pmfeatures.h	2014-04-30 13:12:54.000000000 +0900
+@@ -0,0 +1,13 @@
++/* Automatically generated by ../../tools/pmGenPmFeatures.py on Wed Jul 10 09:06:19 2013.  DO NOT EDIT. */
++#define HAVE_PRINT
++#define HAVE_CLASSES
++#define HAVE_REPLICATION
++#define HAVE_DEFAULTARGS
++#define HAVE_DEL
++#define HAVE_BACKTICK
++#define HAVE_FLOAT
++#define HAVE_GC
++#define HAVE_STRING_FORMAT
++#define HAVE_ASSERT
++#define HAVE_GENERATORS
++#define HAVE_IMPORTS
+diff -urN pymite-09.org/src/platform/ZPU/pmfeatures.py pymite-09/src/platform/ZPU/pmfeatures.py
+--- pymite-09.org/src/platform/ZPU/pmfeatures.py	1970-01-01 09:00:00.000000000 +0900
++++ pymite-09/src/platform/ZPU/pmfeatures.py	2014-04-30 13:12:54.000000000 +0900
+@@ -0,0 +1,19 @@
++PM_FEATURES = {
++    "HAVE_PRINT": True,
++    "HAVE_GC": True,
++    "HAVE_FLOAT": True,
++    "HAVE_DEL": True,
++    "HAVE_IMPORTS": True,
++    "HAVE_DEFAULTARGS": True,
++    "HAVE_REPLICATION": True,
++    "HAVE_CLASSES": True,
++    "HAVE_ASSERT": True,
++    "HAVE_GENERATORS": True,
++    "HAVE_BACKTICK": True,
++    "HAVE_STRING_FORMAT": True,
++    "HAVE_CLOSURES": False,
++    "HAVE_BYTEARRAY": False,
++    "HAVE_DEBUG_INFO": False,
++    "HAVE_SNPRINTF_FORMAT": False,
++    "HAVE_AUTOBOX": False,
++}
+diff -urN pymite-09.org/src/tools/bcode.py pymite-09/src/tools/bcode.py
+--- pymite-09.org/src/tools/bcode.py	2010-10-18 21:27:57.000000000 +0900
++++ pymite-09/src/tools/bcode.py	2014-04-30 13:12:54.000000000 +0900
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.6
+ 
+ # This file is Copyright 2003, 2006, 2007, 2009, 2010 Dean Hall.
+ #
+diff -urN pymite-09.org/src/tools/dismantle.py pymite-09/src/tools/dismantle.py
+--- pymite-09.org/src/tools/dismantle.py	2010-10-18 21:27:57.000000000 +0900
++++ pymite-09/src/tools/dismantle.py	2014-04-30 13:12:54.000000000 +0900
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.6
+ 
+ # This file is Copyright 2003, 2006, 2007, 2009, 2010 Dean Hall.
+ #
+diff -urN pymite-09.org/src/tools/ipm.py pymite-09/src/tools/ipm.py
+--- pymite-09.org/src/tools/ipm.py	2010-10-18 21:27:57.000000000 +0900
++++ pymite-09/src/tools/ipm.py	2014-04-30 13:12:54.000000000 +0900
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.6
+ 
+ # This file is Copyright 2007, 2009, 2010 Dean Hall.
+ #
+diff -urN pymite-09.org/src/tools/pmDist.py pymite-09/src/tools/pmDist.py
+--- pymite-09.org/src/tools/pmDist.py	2010-10-18 21:27:57.000000000 +0900
++++ pymite-09/src/tools/pmDist.py	2014-04-30 13:12:54.000000000 +0900
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.6
+ 
+ # This file is Copyright 2009, 2010 Dean Hall.
+ #
+diff -urN pymite-09.org/src/tools/pmGenPmFeatures.py pymite-09/src/tools/pmGenPmFeatures.py
+--- pymite-09.org/src/tools/pmGenPmFeatures.py	2010-10-18 21:27:57.000000000 +0900
++++ pymite-09/src/tools/pmGenPmFeatures.py	2014-04-30 13:12:54.000000000 +0900
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.6
+ 
+ # This file is Copyright 2010 Dean Hall.
+ #
+diff -urN pymite-09.org/src/tools/pmHeapDump.py pymite-09/src/tools/pmHeapDump.py
+--- pymite-09.org/src/tools/pmHeapDump.py	2010-10-18 21:27:57.000000000 +0900
++++ pymite-09/src/tools/pmHeapDump.py	2014-04-30 13:12:54.000000000 +0900
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.6
+ 
+ # This file is Copyright 2009, 2010 Dean Hall.
+ #
+diff -urN pymite-09.org/src/tools/pmImgCreator.py pymite-09/src/tools/pmImgCreator.py
+--- pymite-09.org/src/tools/pmImgCreator.py	2010-10-18 21:27:57.000000000 +0900
++++ pymite-09/src/tools/pmImgCreator.py	2014-04-30 13:12:54.000000000 +0900
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.6
+ 
+ # This file is Copyright 2003, 2006, 2007, 2009, 2010 Dean Hall.
+ #
+バイナリーファイル pymite-09.org/src/tools/pmImgCreator.pyc とpymite-09/src/tools/pmImgCreator.pyc は異なります
+diff -urN pymite-09.org/src/tools/pmOdDecoder.py pymite-09/src/tools/pmOdDecoder.py
+--- pymite-09.org/src/tools/pmOdDecoder.py	2010-10-18 21:27:57.000000000 +0900
++++ pymite-09/src/tools/pmOdDecoder.py	2014-04-30 13:12:54.000000000 +0900
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.6
+ 
+ # This file is Copyright 2009, 2010 Dean Hall.
+ #
+diff -urN pymite-09.org/src/tools/pycscope.py pymite-09/src/tools/pycscope.py
+--- pymite-09.org/src/tools/pycscope.py	2010-10-18 21:27:57.000000000 +0900
++++ pymite-09/src/tools/pycscope.py	2014-04-30 13:12:54.000000000 +0900
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.6
+ 
+ # This file is Copyright 2003, 2006, 2007, 2009, 2010 Dean Hall.
+ #
+diff -urN pymite-09.org/src/vm/ZPU/Makefile pymite-09/src/vm/ZPU/Makefile
+--- pymite-09.org/src/vm/ZPU/Makefile	1970-01-01 09:00:00.000000000 +0900
++++ pymite-09/src/vm/ZPU/Makefile	2014-05-01 19:57:54.000000000 +0900
+@@ -0,0 +1,102 @@
++
++PLATFORM ?= ZPU
++
++IPM=false
++
++# ==== PATH  ======================================================
++GNUPATH    := /zpu/papilio-zap-ide/hardware/tools/zpu
++GNUPREFIX  := $(GNUPATH)/bin/zpu-elf-
++CRTOBJPATH := $(GNUPATH)/lib/gcc/zpu-elf/3.4.2/
++
++# ==== gcc function ======================================================
++AS := $(GNUPREFIX)gcc
++CC := $(GNUPREFIX)gcc
++LD := $(GNUPREFIX)gcc
++AR := $(GNUPREFIX)ar
++OC := $(GNUPREFIX)objcopy
++OD := $(GNUPREFIX)objdump
++SZ := $(GNUPREFIX)size
++
++# ==== source file dependencies (generated automatically) =====================
++DEPS = Dependencies
++export DEPENDENCIES_OUTPUT := $(DEPS)
++
++# #### source path
++SRC_DIR     = ../
++PLAT_DIR    = ../../platform/$(PLATFORM)
++COMMON_DIR  = ../../../../common/
++
++# #### source search path
++VPATH = $(SRC_DIR):$(PLAT_DIR):$(COMMON_DIR)
++
++CPPFLAGS  = -DZPU -DZPUINO_ACCEL 
++CPPFLAGS += -I$(SRC_DIR) -I$(PLAT_DIR) -I$(COMMON_DIR)
++CFLAGS    = -c $(CPPFLAGS) 
++CFLAGS   += -Wall -O2 -fno-reorder-blocks  -fno-reorder-blocks-and-partition -fno-prefetch-loop-arrays  -fno-gcse -ffunction-sections -fdata-sections -nostartfiles -mmult -mdiv -mno-callpcrel -mno-pushspadd -mno-poppcrel
++ARFLAGS   = rcs
++
++%.o: %.c
++	$(CC) $(CFLAGS)  $< -o $@
++
++# ===========================================================================
++
++PM_LIB_ROOT       = pmvm
++PM_LIB_FN         = lib$(PM_LIB_ROOT).a
++PMIMGCREATOR     := $(SRC_DIR)../tools/pmImgCreator.py
++PMSTDLIB_SOURCES  = $(SRC_DIR)../lib/list.py \
++                    $(SRC_DIR)../lib/dict.py \
++                    $(SRC_DIR)../lib/__bi.py \
++                    $(SRC_DIR)../lib/sys.py \
++                    $(SRC_DIR)../lib/string.py
++ifeq ($(IPM),true)
++	PMSTDLIB_SOURCES += $(SRC_DIR)../lib/ipm.py
++endif
++
++
++#SOURCE_IMG := pmstdlib_img.c
++#SOURCE_NAT := pmstdlib_nat.c
++
++#SOURCES = $(notdir $(wildcard $(SRC_DIR)*.c)) $(SOURCE_IMG) $(SOURCE_NAT)
++SOURCES = $(notdir $(wildcard $(SRC_DIR)*.c))
++OBJECTS = $(SOURCES:.c=.o)
++INDENT := $(call pathsearch,indent)
++
++
++
++
++.PHONY: all size indent clean
++# Must delete/rebuild these intermediate files because they depend on the platform
++#.INTERMEDIATE: $(SOURCE_IMG) $(SOURCE_NAT)
++
++# Default action is to build the archive from object files
++#all : $(SOURCE_IMG) $(SOURCE_NAT) $(PM_LIB_FN)
++all : $(PM_LIB_FN)
++
++# Translate Python code to bytecoded C images
++# bytecode : $(SOURCE_IMG) $(SOURCE_NAT) ../platform/$(PLATFORM)/pmfeatures.h
++
++# The archive is generated by placing object files inside it
++$(PM_LIB_FN) : $(OBJECTS)
++	$(AR) $(ARFLAGS) $@ $^
++
++# Build the standard library into an image file and native function file
++#$(SOURCE_IMG) $(SOURCE_NAT) : $(PMSTDLIB_SOURCES) $(PMIMGCREATOR) ../platform/$(PLATFORM)/pmfeatures.py
++#	$(PMIMGCREATOR) -f ../platform/$(PLATFORM)/pmfeatures.py -c -s --memspace=flash -o $(SOURCE_IMG) --native-file=$(SOURCE_NAT) $(PMSTDLIB_SOURCES)
++
++#size : $(PM_LIB_FN)
++#	@$(SIZE) $(PM_LIB_FN)
++
++# Runs GNU indent on the source files
++#indent :
++#	$(if $(INDENT), $(INDENT) *.c *.h)
++#
++# Remove files made by default make
++clean :
++###	@$(RM) $(PM_LIB_FN) $(SOURCE_IMG) $(SOURCE_NAT)
++	@$(RM) $(PM_LIB_FN)
++	@$(RM) $(OBJECTS) $(DEPS)
++
++# ==== generate dependencies ==================================================
++$(DEPS): ; touch $(DEPS)
++include $(DEPS)
++
+diff -urN pymite-09.org/src/vm/heap.c pymite-09/src/vm/heap.c
+--- pymite-09.org/src/vm/heap.c	2010-10-18 21:27:57.000000000 +0900
++++ pymite-09/src/vm/heap.c	2014-05-01 19:41:47.000000000 +0900
+@@ -1060,6 +1060,10 @@
+             pobj = (pPmObj_t)((uint8_t *)pobj + OBJ_GET_SIZE(pobj));
+         }
+ 
++		if (OBJ_GET_SIZE(pobj) == 0) {
++			break;
++		}
++
+         /* Stop if reached the end of the heap */
+         if ((uint8_t *)pobj >= &pmHeap.base[PM_HEAP_SIZE])
+         {
+@@ -1102,6 +1106,10 @@
+             C_DEBUG_PRINT(VERBOSITY_HIGH, "heap_gcSweep(), id=%p, s=%d\n",
+                           pchunk, OBJ_GET_SIZE(pchunk));
+ 
++			if (OBJ_GET_SIZE(pchunk) == 0) {
++				break;
++			}
++
+             /* Proceed to the next chunk */
+             pchunk = (pPmHeapDesc_t)
+                 ((uint8_t *)pchunk + OBJ_GET_SIZE(pchunk));
+@@ -1112,7 +1120,6 @@
+                 break;
+             }
+         }
+-
+         /* Set the heap descriptor data */
+         OBJ_SET_FREE(pobj, 1);
+         OBJ_SET_SIZE(pobj, totalchunksize);
+@@ -1135,6 +1142,14 @@
+ {
+     PmReturn_t retval;
+ 
++//	volatile static int gc_flag = 0;
++
++//	if (gc_flag) {
++//		return PM_RET_OK;
++//	}
++
++//	gc_flag = 1;
++
+     /* #239: Fix GC when 2+ unlinked allocs occur */
+     /* This assertion fails when there are too many objects on the temporary
+      * root stack and a GC occurs; consider increasing PM_HEAP_NUM_TEMP_ROOTS
+@@ -1149,6 +1164,9 @@
+ 
+     retval = heap_gcSweep();
+     /*heap_dump();*/
++
++//	gc_flag = 0;
++
+     return retval;
+ }
+ 

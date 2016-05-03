@@ -1,0 +1,1130 @@
+diff --git a/zpu/hdl/zpuino/simulator/Makefile.am b/zpu/hdl/zpuino/simulator/Makefile.am
+index 7563184..3b7c391 100644
+--- a/zpu/hdl/zpuino/simulator/Makefile.am
++++ b/zpu/hdl/zpuino/simulator/Makefile.am
+@@ -7,7 +7,7 @@ zpuinosimulator_SOURCES=simple-simulator.c \
+ 	trace.c \
+ 	executor.S zpuinointerface.c io.c gui.c \
+ 	timer.c spiflash.c \
+-	crc16_core.c gpio.c uart.c intr.c crc16.c vga.c vgazx.c vgacharram.c
++	crc16_core.c gpio.c uart.c intr.c crc16.c vga.c vgacharram.c
+ 
+ zpuinogenflash_SOURCES=genflash.c crc16_core.c
+ 	
+diff --git a/zpu/hdl/zpuino/simulator/autogen.sh b/zpu/hdl/zpuino/simulator/autogen.sh
+old mode 100644
+new mode 100755
+diff --git a/zpu/hdl/zpuino/simulator/configure.in b/zpu/hdl/zpuino/simulator/configure.in
+index c7ea3ea..d55f7d7 100644
+--- a/zpu/hdl/zpuino/simulator/configure.in
++++ b/zpu/hdl/zpuino/simulator/configure.in
+@@ -21,7 +21,7 @@ PKG_CHECK_MODULES(vte, vte, AC_DEFINE(HAVE_VTE,,[Define this if you have the GTK
+ #zpuino_libdir=$libdir/zpuino-simulator
+ #AC_SUBST(zpuino_libdir)
+ 
+-CFLAGS="$CFLAGS -Wall -Werror -O6 -g -funit-at-a-time -funroll-loops -mtune=core2"
++CFLAGS="$CFLAGS -Wall -O6 -g -funit-at-a-time -funroll-loops -mtune=core2"
+ LDFLAGS="$LDFLAGS"
+ 
+ AC_OUTPUT([Makefile])
+diff --git a/zpu/hdl/zpuino/simulator/defs.h b/zpu/hdl/zpuino/simulator/defs.h
+new file mode 100644
+index 0000000..6111b0a
+--- /dev/null
++++ b/zpu/hdl/zpuino/simulator/defs.h
+@@ -0,0 +1,2 @@
++#define	MEMSIZE		(8*1024*1024)
++#define	STACK_SIZE	(64*1024)
+diff --git a/zpu/hdl/zpuino/simulator/device.map b/zpu/hdl/zpuino/simulator/device.map
+index 380bb0d..0e20fd3 100644
+--- a/zpu/hdl/zpuino/simulator/device.map
++++ b/zpu/hdl/zpuino/simulator/device.map
+@@ -10,5 +10,5 @@
+ 3,timer
+ 4,intr
+ 7,crc16
+-8,vgazx
++##8,vgazx
+ 10,vgacharram
+diff --git a/zpu/hdl/zpuino/simulator/executor.S b/zpu/hdl/zpuino/simulator/executor.S
+index 76231b3..1bcc1cf 100644
+--- a/zpu/hdl/zpuino/simulator/executor.S
++++ b/zpu/hdl/zpuino/simulator/executor.S
+@@ -8,11 +8,13 @@
+         
+         .globl execute
+ 
+-#define STACKMASK 0x1FFF
+-#define MEMMASK 0x3FFFFF
++// #define STACKMASK 0x1FFF
++//#define MEMMASK 0x3FFFFF
++#define STACKMASK 0x0000FFFF
++#define MEMMASK 0x007FFFFF
+ #define STACKPAGEMASK (MEMMASK ^ STACKMASK)
+ 
+-#define MAXADDRBITINCIO $27
++#define MAXADDRBITINCIO $27			// bit27がnon-mapのマーク？  bit31がスタックのマーク
+ 
+ .do_tick:
+         push %edx
+@@ -470,7 +472,9 @@ zpu_emulate4:            // 36 Lessthan
+ zpu_emulate5:            // 37 Lessthanorequal
+         emulateX 5
+ zpu_emulate6:            // 38 Ulessthan
+-        // emulateX 6
++#if 1
++        emulateX 6
++#else
+         push %esi
+         and $STACKMASK, %esi
+         movl _stack+4(%esi), %eax
+@@ -483,6 +487,7 @@ zpu_emulate6:            // 38 Ulessthan
+         jae .opcode_return
+         incl %ebx
+         jmp .opcode_return
++#endif
+ 
+ zpu_emulate7:            // 39 Ulessthanorequal
+         emulateX 7
+@@ -497,7 +502,9 @@ zpu_emulate11:           // 43 Ashiftleft
+ zpu_emulate12:           // 44 Ashiftright
+         emulateX 12
+ zpu_emulate13:           // 45 Call
+-        // emulateX 13
++#if 1
++        emulateX 13
++#else
+         /*
+          push %ebx
+         mov %edi, %eax
+@@ -516,9 +523,12 @@ zpu_emulate13:           // 45 Call
+         xchg %edi, %ebx
+         incl %ebx
+         jmp .opcode_return
++#endif
+ 
+ zpu_emulate14:           // 46 Eq
+-        //emulateX 14
++#if 1
++        emulateX 14
++#else
+         push %esi
+         and $STACKMASK, %esi
+         movl _stack+4(%esi), %eax
+@@ -531,6 +541,7 @@ zpu_emulate14:           // 46 Eq
+         jne .opcode_return
+         incl %ebx
+         jmp .opcode_return
++#endif
+ 
+ zpu_emulate15:           // 47 Neq
+         emulateX 15
+@@ -551,7 +562,9 @@ zpu_emulate22:           // 54 Mod
+ zpu_emulate23:           // 55 Eqbranch
+         emulateX 23
+ zpu_emulate24:           // 56 Neqbranch
+-        // emulateX 24
++#if 1
++        emulateX 24
++#else
+         // PC is in %ebx
+         
+         push %esi
+@@ -577,6 +590,7 @@ zpu_emulate24:           // 56 Neqbranch
+         bswap %ebx
+ 
+         jmp .opcode_return
++#endif
+ 
+ zpu_emulate25:           // 57 Poppcrel
+         emulateX 25
+diff --git a/zpu/hdl/zpuino/simulator/gpio.c b/zpu/hdl/zpuino/simulator/gpio.c
+index 0463c6e..76f5e20 100644
+--- a/zpu/hdl/zpuino/simulator/gpio.c
++++ b/zpu/hdl/zpuino/simulator/gpio.c
+@@ -17,6 +17,30 @@ struct gpio_watcher
+ 
+ 
+ 
++void led_pin_changed(unsigned pin, int value, void *data)
++{
++	if (value == 0) {
++		// fprintf(stderr,"LED OFF\n");
++		gui_led_off();
++	} else {
++		// fprintf(stderr,"LED OM\n");
++		gui_led_on();
++	}
++}
++
++
++
++
++
++
++
++
++
++
++
++
++
++
+ 
+ int gpio_add_pin_notify(unsigned pin, gpio_notifier_callback_t callback, void*data)
+ {
+@@ -268,6 +292,24 @@ static int initialize_device(int argc,char**argv)
+ 	return 0;
+ }
+ 
++int gpio_post_init()
++{
++	// Attach to GPIO
++	zpuino_device_t *gpiodev = zpuino_get_device_by_name("gpio");
++	gpio_class_t *gpioclass;
++
++	if (NULL==gpiodev) {
++		fprintf(stderr,"Cannot find device \"gpio\", cannot attach LED");
++		return -1;
++	}
++
++	gpioclass = gpiodev->class;
++	fprintf(stderr,"LED: using %d as LED drive pin\n", 49);
++	gpioclass->add_pin_notify( 49, &led_pin_changed, NULL );
++
++	return 0;
++}
++
+ static gpio_class_t gpio_class = {
+ 	.add_pin_notify = &gpio_add_pin_notify,
+ 	.set_pin = &gpio_set_pin
+@@ -278,11 +320,15 @@ static zpuino_device_t dev = {
+ 	.init = initialize_device,
+ 	.read = gpio_io_read_handler,
+ 	.write = gpio_io_write_handler,
+-	.post_init = NULL,
++//	.post_init = NULL,
++	.post_init = gpio_post_init,
+ 	.class = &gpio_class
+ };
+ 
+ static void ZPUINOINIT gpio_init()
+ {
+ 	zpuino_register_device(&dev);
++
++//	gpio_add_pin_notify( 49, &led_pin_changed, NULL );
++
+ }
+diff --git a/zpu/hdl/zpuino/simulator/gui.c b/zpu/hdl/zpuino/simulator/gui.c
+index c8bbac8..16ea3b3 100644
+--- a/zpu/hdl/zpuino/simulator/gui.c
++++ b/zpu/hdl/zpuino/simulator/gui.c
+@@ -6,8 +6,10 @@ static GtkWidget *mainvbox;
+ //static GtkWidget *menu;
+ static GtkWidget *note;
+ static GtkWidget *status;
++static GtkWidget *status_led;
+ static GtkWidget *toolbar;
+ static gint statusid;
++static gint status_led_id;
+ 
+ extern void zpu_halt();
+ extern void zpu_reset();
+@@ -94,10 +96,16 @@ void gui_init()
+ 	gtk_box_pack_start( GTK_BOX(mainvbox), note, 0, 0, 0);
+ 
+ 	status = gtk_statusbar_new();
+-
+ 	gtk_box_pack_start( GTK_BOX(mainvbox), status, 0, 0, 0);
+-
+ 	statusid = gtk_statusbar_get_context_id(GTK_STATUSBAR(status),"MAIN");
++	gtk_statusbar_push(GTK_STATUSBAR(status),statusid,"status");
++
++
++	status_led = gtk_statusbar_new();
++	gtk_box_pack_start( GTK_BOX(mainvbox), status_led, 0, 0, 0);
++	status_led_id = gtk_statusbar_get_context_id(GTK_STATUSBAR(status_led),"MAIN");
++	gtk_statusbar_push(GTK_STATUSBAR(status_led),status_led_id,"_ LED off");
++
+ }
+ 
+ void gui_post_init()
+@@ -107,9 +115,33 @@ void gui_post_init()
+ 
+ void gui_set_status(const char*text)
+ {
++    gtk_statusbar_pop(GTK_STATUSBAR(status),statusid);
+     gtk_statusbar_push(GTK_STATUSBAR(status),statusid,text);
+ }
+ 
++static gboolean  gui_led_on_status(void)
++{
++	gtk_statusbar_pop(GTK_STATUSBAR(status_led),status_led_id);
++	gtk_statusbar_push(GTK_STATUSBAR(status_led),status_led_id,"* LED on");
++	return FALSE;
++}
++
++static gboolean  gui_led_off_status(void)
++{
++	gtk_statusbar_pop(GTK_STATUSBAR(status_led),status_led_id);
++	gtk_statusbar_push(GTK_STATUSBAR(status_led),status_led_id,"_ LED off");
++	return FALSE;
++}
++
++void gui_led_on(void)
++{
++	g_idle_add_full(G_PRIORITY_HIGH, gui_led_on_status, NULL, NULL);
++}
++
++void gui_led_off(void)
++{
++	g_idle_add_full(G_PRIORITY_HIGH, gui_led_off_status, NULL, NULL);
++}
+ 
+ int gui_append_new_tab(const char *name, GtkWidget *t)
+ {
+diff --git a/zpu/hdl/zpuino/simulator/gui.h b/zpu/hdl/zpuino/simulator/gui.h
+index 23095d7..26c677e 100644
+--- a/zpu/hdl/zpuino/simulator/gui.h
++++ b/zpu/hdl/zpuino/simulator/gui.h
+@@ -12,6 +12,9 @@ GtkWidget *gui_get_top_window();
+ 
+ void gui_set_status(const char*text);
+ 
++void gui_led_on(void);
++void gui_led_off(void);
++
+ void gui_notify_zpu_resumed();
+ void gui_notify_zpu_halted();
+ 
+diff --git a/zpu/hdl/zpuino/simulator/intr.c b/zpu/hdl/zpuino/simulator/intr.c
+index 7ac875e..de1a472 100644
+--- a/zpu/hdl/zpuino/simulator/intr.c
++++ b/zpu/hdl/zpuino/simulator/intr.c
+@@ -4,19 +4,30 @@
+ extern int do_interrupt;
+ int interrupt_enabled=0;
+ 
+-static int int_lines[32] = {0};
++static unsigned int intrctl = 0;
++static unsigned int intrmask = 0;
++static unsigned int intrreq = 0;
+ 
+-void zpuino_request_interrupt(int line)
++static void
++check_interrupt(void)
+ {
+-   // printf("Interrupting\n");
+ 	if (interrupt_enabled) {
+-		do_interrupt = 1;
+-		interrupt_enabled=0;
+-	} else {
+-		int_lines[line] = 1;
++		if (intrreq & intrmask) {
++			do_interrupt = 1;
++			intrreq &= ~intrmask;		// clear interrupt request
++			// printf("interrupt accepted\n");
++		}
+ 	}
+ }
+ 
++void zpuino_request_interrupt(int line)
++{
++   // printf("Interrupting\n");
++   intrreq |= 1 << line;
++   check_interrupt();
++}
++
++#if 0
+ void zpuino_enable_interrupts()
+ {
+ 	interrupt_enabled=1;
+@@ -29,50 +40,46 @@ void zpuino_enable_interrupts()
+ 		}
+ 	}
+ }
++#endif
+ 
+-unsigned intr_read_status(unsigned address)
++unsigned intr_read_intrctl(unsigned address)
+ {
+-	return (unsigned)interrupt_enabled;
++	return (unsigned)intrctl;
+ }
+ 
+-unsigned intr_read_mask(unsigned address)
++unsigned intr_read_intrmask(unsigned address)
+ {
+-	return 0xffffffff;
++	return intrmask;
+ }
+ 
+ 
+ unsigned intr_io_read_handler(unsigned address)
+ {
+ 	//printf("INTR read @ 0x%08x\n",address);
+-	MAPREGR(0,intr_read_status);
+-	MAPREGR(1,intr_read_mask);
++	MAPREGR(0,intr_read_intrctl);
++	MAPREGR(1,intr_read_intrmask);
+ 	ERRORREG();
+ 	return 0;
+ }
+ 
+-unsigned intr_write_status(unsigned address,unsigned value)
++unsigned intr_write_intrctl(unsigned address,unsigned value)
+ {
+ 	do_interrupt=0;
+-	interrupt_enabled = value&1;
+-	return 0;
+-}
+-
+-unsigned intr_write_mask(unsigned address,unsigned value)
+-{
++	intrctl = interrupt_enabled = value&1;
+ 	return 0;
+ }
+ 
+-unsigned intr_write_ctrl(unsigned address,unsigned value)
++unsigned intr_write_intrmask(unsigned address,unsigned value)
+ {
++	intrmask = value;
+ 	return 0;
+ }
+ 
+ void intr_io_write_handler(unsigned address, unsigned value)
+ {
+ 	//printf("INTR write 0x%08x @ 0x%08x\n",value,address);
+-	MAPREGW(0,intr_write_status);
+-	MAPREGW(1,intr_write_mask);
+-	MAPREGW(4,intr_write_ctrl);
++	MAPREGW(0,intr_write_intrctl);
++	MAPREGW(1,intr_write_intrmask);
+ 	ERRORREG();
+ }
+ 
+diff --git a/zpu/hdl/zpuino/simulator/simple-simulator.c b/zpu/hdl/zpuino/simulator/simple-simulator.c
+old mode 100644
+new mode 100755
+index 14a9e62..b6aea02
+--- a/zpu/hdl/zpuino/simulator/simple-simulator.c
++++ b/zpu/hdl/zpuino/simulator/simple-simulator.c
+@@ -104,9 +104,19 @@ void perform_io()
+ 
+ int help()
+ {
+-	printf("Invalid usage.\n");
+-	printf("Please use: zpuinosimulator bootloader.bin\n"
+-		   "See also specific device information.\n");
++	printf("== USAGE ==\n");
++	printf("zpuinosimulator [option] <binfile>\n");
++	printf("  option:\n");
++	printf("    -a <address>  : trace from <address>\n");
++	printf("    -t <tick>     : trace from <tick>\n");
++	printf("    -l <lines>    : trace <lines>lines(default: 65536)\n");
++	printf("    -d <depth>    : stack depth(default:8)\n");
++	printf("    -b <address>  : break at <address>\n");
++	printf("    -p <count>    : pass through <count> times(with -a,-t,-b)\n");
++	printf("    -e            : include optional instructions in trace\n");
++	printf("    -h            : display help message\n");
++	printf("  binfile: binary file of program\n");
++	printf("\n\n\n");
+ 	return -1;
+ }
+ 
+@@ -116,7 +126,6 @@ void *zpu_thread(void*data)
+ 	do {
+ 		r = execute();
+ 		if (r==0) { // Requested halt
+-
+ 			pthread_mutex_lock(&zpu_halted_lock);
+ 			zpu_halted_flag=1;
+ 			pthread_mutex_unlock(&zpu_halted_lock);
+@@ -327,9 +336,21 @@ int load_device_map(const char *file)
+ 	return 0;
+ }
+ 
++int			dump_flag;
++int			dump_flag_addr;
++int			dump_flag_tick;
++int			dump_flag_ext;
++unsigned	dump_start_addr;
++unsigned	dump_start_tick;
++unsigned	dump_lines;
++unsigned	dump_stack_depth;
++unsigned	break_addr;
++unsigned	pass_cpunt;
++
+ void mem_init()
+ {
+ 	memset(_memory,0,sizeof(_memory));
++	memset(_stack,0,sizeof(_stack));
+ }
+ 
+ int main(int argc,char **argv)
+@@ -337,10 +358,75 @@ int main(int argc,char **argv)
+ 	pthread_t zputhread;
+ 	pthread_attr_t zputhreadattr;
+ 	void *ret;
++	char *tmpp;
++
++	dump_flag = 0;
++	dump_flag_addr = 0;
++	dump_flag_tick = 0;
++	dump_flag_ext  = 0;
++	dump_start_addr = 0xffffffff;
++	dump_start_tick = 0xffffffff;
++	dump_lines = 0x10000;
++	dump_stack_depth = 8;
++	break_addr = 0xffffffff;
++	pass_cpunt = 0;
++
++	setvbuf(stdout, NULL, _IONBF, 0);
+ 
+ 	if (argc<2) {
+ 		return help();
+ 	}
++	while(1) {
++		if (argv[1][0] == '-') {
++			if (argv[1][1] == 'a') {
++				// dump start address
++				dump_flag_addr = 1;
++				dump_start_addr = strtol(argv[2], &tmpp, 0);
++				argv++;argc--;
++			}
++			else if (argv[1][1] == 't') {
++				// dump start tick
++				dump_flag_tick = 1;
++				dump_start_tick = strtol(argv[2], &tmpp, 0);
++				argv++;argc--;
++			}
++			else if (argv[1][1] == 'l') {
++				// dump lines
++				dump_lines = strtol(argv[2], &tmpp, 0);
++				argv++;argc--;
++			}
++			else if (argv[1][1] == 'd') {
++				// dump stack depth
++				dump_stack_depth = strtol(argv[2], &tmpp, 0);
++				argv++;argc--;
++			}
++			else if (argv[1][1] == 'b') {
++				// break point
++				break_addr = strtol(argv[2], &tmpp, 0);
++				argv++;argc--;
++			}
++			else if (argv[1][1] == 'p') {
++				// break point
++				pass_cpunt = strtol(argv[2], &tmpp, 0);
++				argv++;argc--;
++			}
++			else if (argv[1][1] == 'e') {
++				// trace extention opcode
++				dump_flag_ext = 1;
++			}
++			else if (argv[1][1] == 'h') {
++				// help
++				return help();
++			}
++			argv++;argc--;
++		}
++		else {
++			break;
++		}
++	}
++	if (argc<2) {
++		return help();
++	}
+ 
+ 	mem_init();
+ 
+@@ -351,14 +437,17 @@ int main(int argc,char **argv)
+ 	zpuino_interface_init();
+ 
+ 	trace_init(1024);
+-
+ 	if (load_device_map("device.map")<0) {
+ 		fprintf(stderr,"SIMULATOR: Error loading device map\n");
+ 		return -1;
+ 	}
+ 
+ 	int infile = open(argv[1],O_RDONLY);
+-	read(infile,_memory,MEMSIZE);
++	if (infile<0) {
++		fprintf(stderr,"SIMULATOR: Can not open binfile\n");
++		return -1;
++	}
++	int zzz = read(infile,_memory,MEMSIZE);
+ 	close(infile);
+ 
+ 	zpuino_io_post_init();
+@@ -388,6 +477,10 @@ int main(int argc,char **argv)
+ 
+ 	zpu_halt();
+ 
++#if 0
++	gui_resume();
++#endif
++
+ 	poll_loop();
+ 
+ 	pthread_join(zputhread,&ret);
+diff --git a/zpu/hdl/zpuino/simulator/timer.c b/zpu/hdl/zpuino/simulator/timer.c
+index 45de72f..7587d1a 100644
+--- a/zpu/hdl/zpuino/simulator/timer.c
++++ b/zpu/hdl/zpuino/simulator/timer.c
+@@ -34,7 +34,7 @@ void *timer_runner(void *data)
+ 			return NULL;
+ 		//printf("Tick %lu %lu\n", sleepreq.tv_sec, sleepreq.tv_nsec);
+ 		if (ctrl &BIT(TCTLIEN)) {
+-			zpuino_request_interrupt(0);
++			zpuino_request_interrupt(3);
+ 		}
+ 	}
+ }
+@@ -81,7 +81,7 @@ void timer_tick(unsigned delta)
+ 						//printf("# Interrupting\n");
+ 						ctrl |= BIT(TCTLIF);
+ 						//do_interrupt=1;
+-						zpuino_request_interrupt(0);
++						zpuino_request_interrupt(3);
+ 					}
+ 
+ 					if (ctrl & BIT(TCTLCCM)) {
+@@ -91,14 +91,19 @@ void timer_tick(unsigned delta)
+ 					}
+ 				}
+ 
+-				if (likely(ctrl & BIT(TCTLDIR)))
++				if (likely(ctrl & BIT(TCTLDIR))) {
+ 					timer_cnt++;
+-				else
++					// printf("Timer cnt:%08x\n", timer_cnt);
++				}
++				else {
+ 					timer_cnt--;
++					// printf("Timer cnt:%08x\n", timer_cnt);
++				}
+ 				timer_prescaleCount = timer_prescaler;
+ 			}
+ 
+ 			if (likely(timer_prescaleCount>0)) {
++				// printf("timer_prescaleCount:%08x\n", timer_prescaleCount);
+ 				timer_prescaleCount--;
+ 			}
+ 		}
+@@ -180,7 +185,7 @@ void timer_write( unsigned int address, unsigned int value)
+ 		
+ 		break;
+ 	}
+-
++#if 0
+ 	// Compute wall time.
+ 
+ 	if (ctrl & BIT(TCTLENA) &&
+@@ -205,6 +210,7 @@ void timer_write( unsigned int address, unsigned int value)
+ 			cancel_thread();
+ 		}
+ 	}
++#endif
+ }
+ 
+ unsigned timer_read_tsc(unsigned address)
+@@ -241,7 +247,7 @@ void timers_io_write_handler(unsigned address, unsigned value)
+ 
+ int initialize_device(int argc, char **argv)
+ {
+-	//zpuino_request_tick( &timer_tick );
++	zpuino_request_tick( &timer_tick );
+ 	return 0;
+ }
+ 
+diff --git a/zpu/hdl/zpuino/simulator/trace.c b/zpu/hdl/zpuino/simulator/trace.c
+index e2e5047..025c160 100644
+--- a/zpu/hdl/zpuino/simulator/trace.c
++++ b/zpu/hdl/zpuino/simulator/trace.c
+@@ -2,17 +2,317 @@
+ #include <byteswap.h>
+ #include "defs.h"
+ #include <malloc.h>
++#include <gtk/gtk.h>
+ 
+ static unsigned tracebufsize;
+ static unsigned tracelow=0, tracehigh=0;
+ extern unsigned char _memory[], _stack[];
+ 
+ extern unsigned zpuino_get_tick_count();
++extern void zpu_halt();
+ 
+ struct trace_entry *tracebuffer;
+ 
++extern int		dump_flag;
++extern int		dump_flag_addr;
++extern int		dump_flag_tick;
++extern int		dump_flag_ext;
++extern unsigned	dump_start_addr;
++extern unsigned	dump_start_tick;
++extern unsigned	dump_lines;
++extern unsigned	dump_stack_depth;
++extern unsigned	break_addr;
++extern unsigned	pass_cpunt;
++
++
++static char	opcode_str[][30] = {
++	/* 0x00 */	"BREAKPOINT        ",
++	/* 0x01 */	"MUL16             ",
++	/* 0x02 */	"PUSHSP            ",
++	/* 0x03 */	"BREAKPOINT        ",
++	/* 0x04 */	"POPPC             ",
++	/* 0x05 */	"ADD               ",
++	/* 0x06 */	"AND               ",
++	/* 0x07 */	"OR                ",
++	/* 0x08 */	"LOAD              ",
++	/* 0x09 */	"NOT               ",
++	/* 0x0a */	"FLIP              ",
++	/* 0x0b */	"NOP               ",
++	/* 0x0c */	"STORE             ",
++	/* 0x0d */	"POPSP             ",
++	/* 0x0e */	"BREAKPOINT        ",
++	/* 0x0f */	"BREAKPOINT        ",
++	/* 0x10 */	"ADDSP   0x00      ",
++	/* 0x11 */	"ADDSP   0x04      ",
++	/* 0x12 */	"ADDSP   0x08      ",
++	/* 0x13 */	"ADDSP   0x0C      ",
++	/* 0x14 */	"ADDSP   0x10      ",
++	/* 0x15 */	"ADDSP   0x14      ",
++	/* 0x16 */	"ADDSP   0x18      ",
++	/* 0x17 */	"ADDSP   0x1C      ",
++	/* 0x18 */	"ADDSP   0x20      ",
++	/* 0x19 */	"ADDSP   0x24      ",
++	/* 0x1a */	"ADDSP   0x28      ",
++	/* 0x1b */	"ADDSP   0x2C      ",
++	/* 0x1c */	"ADDSP   0x30      ",
++	/* 0x1d */	"ADDSP   0x34      ",
++	/* 0x1e */	"ADDSP   0x38      ",
++	/* 0x1f */	"ADDSP   0x3C      ",
++	/* 0x20 */	"EMULATE 0x00      ",
++	/* 0x21 */	"EMULATE 0x01      ",
++	/* 0x22 */	"_loadh            ",
++	/* 0x23 */	"_storeh           ",
++	/* 0x24 */	"_lessthan         ",
++	/* 0x25 */	"_lessthanorequal  ",
++	/* 0x26 */	"_ulessthan        ",
++	/* 0x27 */	"_ulessthanorequal ",
++	/* 0x28 */	"_swap             ",
++	/* 0x29 */	"_slowmult         ",
++	/* 0x2a */	"_lshiftright      ",
++	/* 0x2b */	"_ashiftleft       ",
++	/* 0x2c */	"_ashiftright      ",
++	/* 0x2d */	"_call             ",
++	/* 0x2e */	"_eq               ",
++	/* 0x2f */	"_neq              ",
++	/* 0x30 */	"_neg              ",
++	/* 0x31 */	"_sub              ",
++	/* 0x32 */	"_xor              ",
++	/* 0x33 */	"_loadb            ",
++	/* 0x34 */	"_storeb           ",
++	/* 0x35 */	"_div              ",
++	/* 0x36 */	"_mod              ",
++	/* 0x37 */	"_eqbranch         ",
++	/* 0x38 */	"_neqbranch        ",
++	/* 0x39 */	"_poppcrel         ",
++	/* 0x3a */	"_config           ",
++	/* 0x3b */	"_pushpc           ",
++	/* 0x3c */	"_syscall_emulate  ",
++	/* 0x3d */	"_pushspadd        ",
++	/* 0x3e */	"_halfmult         ",
++	/* 0x3f */	"_callpcrel        ",
++	/* 0x40 */	"STORESP 0x40      ",
++	/* 0x41 */	"STORESP 0x44      ",
++	/* 0x42 */	"STORESP 0x48      ",
++	/* 0x43 */	"STORESP 0x4C      ",
++	/* 0x44 */	"STORESP 0x50      ",
++	/* 0x45 */	"STORESP 0x54      ",
++	/* 0x46 */	"STORESP 0x58      ",
++	/* 0x47 */	"STORESP 0x5C      ",
++	/* 0x48 */	"STORESP 0x60      ",
++	/* 0x49 */	"STORESP 0x64      ",
++	/* 0x4a */	"STORESP 0x68      ",
++	/* 0x4b */	"STORESP 0x6C      ",
++	/* 0x4c */	"STORESP 0x70      ",
++	/* 0x4d */	"STORESP 0x74      ",
++	/* 0x4e */	"STORESP 0x78      ",
++	/* 0x4f */	"STORESP 0x7C      ",
++	/* 0x50 */	"STORESP 0x00      ",
++	/* 0x51 */	"STORESP 0x04      ",
++	/* 0x52 */	"STORESP 0x08      ",
++	/* 0x53 */	"STORESP 0x0C      ",
++	/* 0x54 */	"STORESP 0x10      ",
++	/* 0x55 */	"STORESP 0x14      ",
++	/* 0x56 */	"STORESP 0x18      ",
++	/* 0x57 */	"STORESP 0x1C      ",
++	/* 0x58 */	"STORESP 0x20      ",
++	/* 0x59 */	"STORESP 0x24      ",
++	/* 0x5a */	"STORESP 0x28      ",
++	/* 0x5b */	"STORESP 0x2C      ",
++	/* 0x5c */	"STORESP 0x30      ",
++	/* 0x5d */	"STORESP 0x34      ",
++	/* 0x5e */	"STORESP 0x38      ",
++	/* 0x5f */	"STORESP 0x3C      ",
++	/* 0x60 */	"LOADSP  0x40      ",
++	/* 0x61 */	"LOADSP  0x44      ",
++	/* 0x62 */	"LOADSP  0x48      ",
++	/* 0x63 */	"LOADSP  0x4C      ",
++	/* 0x64 */	"LOADSP  0x50      ",
++	/* 0x65 */	"LOADSP  0x54      ",
++	/* 0x66 */	"LOADSP  0x58      ",
++	/* 0x67 */	"LOADSP  0x5C      ",
++	/* 0x68 */	"LOADSP  0x60      ",
++	/* 0x69 */	"LOADSP  0x64      ",
++	/* 0x6a */	"LOADSP  0x68      ",
++	/* 0x6b */	"LOADSP  0x6C      ",
++	/* 0x6c */	"LOADSP  0x70      ",
++	/* 0x6d */	"LOADSP  0x74      ",
++	/* 0x6e */	"LOADSP  0x78      ",
++	/* 0x6f */	"LOADSP  0x7C      ",
++	/* 0x70 */	"LOADSP  0x00      ",
++	/* 0x71 */	"LOADSP  0x04      ",
++	/* 0x72 */	"LOADSP  0x08      ",
++	/* 0x73 */	"LOADSP  0x0C      ",
++	/* 0x74 */	"LOADSP  0x10      ",
++	/* 0x75 */	"LOADSP  0x14      ",
++	/* 0x76 */	"LOADSP  0x18      ",
++	/* 0x77 */	"LOADSP  0x1C      ",
++	/* 0x78 */	"LOADSP  0x20      ",
++	/* 0x79 */	"LOADSP  0x24      ",
++	/* 0x7a */	"LOADSP  0x28      ",
++	/* 0x7b */	"LOADSP  0x2C      ",
++	/* 0x7c */	"LOADSP  0x30      ",
++	/* 0x7d */	"LOADSP  0x34      ",
++	/* 0x7e */	"LOADSP  0x38      ",
++	/* 0x7f */	"LOADSP  0x3C      ",
++	/* 0x80 */	"IM      0x00      ",
++	/* 0x81 */	"IM      0x01      ",
++	/* 0x82 */	"IM      0x02      ",
++	/* 0x83 */	"IM      0x03      ",
++	/* 0x84 */	"IM      0x04      ",
++	/* 0x85 */	"IM      0x05      ",
++	/* 0x86 */	"IM      0x06      ",
++	/* 0x87 */	"IM      0x07      ",
++	/* 0x88 */	"IM      0x08      ",
++	/* 0x89 */	"IM      0x09      ",
++	/* 0x8a */	"IM      0x0a      ",
++	/* 0x8b */	"IM      0x0b      ",
++	/* 0x8c */	"IM      0x0c      ",
++	/* 0x8d */	"IM      0x0d      ",
++	/* 0x8e */	"IM      0x0e      ",
++	/* 0x8f */	"IM      0x0f      ",
++	/* 0x90 */	"IM      0x10      ",
++	/* 0x91 */	"IM      0x11      ",
++	/* 0x92 */	"IM      0x12      ",
++	/* 0x93 */	"IM      0x13      ",
++	/* 0x94 */	"IM      0x14      ",
++	/* 0x95 */	"IM      0x15      ",
++	/* 0x96 */	"IM      0x16      ",
++	/* 0x97 */	"IM      0x17      ",
++	/* 0x98 */	"IM      0x18      ",
++	/* 0x99 */	"IM      0x19      ",
++	/* 0x9a */	"IM      0x1a      ",
++	/* 0x9b */	"IM      0x1b      ",
++	/* 0x9c */	"IM      0x1c      ",
++	/* 0x9d */	"IM      0x1d      ",
++	/* 0x9e */	"IM      0x1e      ",
++	/* 0x9f */	"IM      0x1f      ",
++	/* 0xa0 */	"IM      0x20      ",
++	/* 0xa1 */	"IM      0x21      ",
++	/* 0xa2 */	"IM      0x22      ",
++	/* 0xa3 */	"IM      0x23      ",
++	/* 0xa4 */	"IM      0x24      ",
++	/* 0xa5 */	"IM      0x25      ",
++	/* 0xa6 */	"IM      0x26      ",
++	/* 0xa7 */	"IM      0x27      ",
++	/* 0xa8 */	"IM      0x28      ",
++	/* 0xa9 */	"IM      0x29      ",
++	/* 0xaa */	"IM      0x2a      ",
++	/* 0xab */	"IM      0x2b      ",
++	/* 0xac */	"IM      0x2c      ",
++	/* 0xad */	"IM      0x2d      ",
++	/* 0xae */	"IM      0x2e      ",
++	/* 0xaf */	"IM      0x2f      ",
++	/* 0xb0 */	"IM      0x30      ",
++	/* 0xb1 */	"IM      0x31      ",
++	/* 0xb2 */	"IM      0x32      ",
++	/* 0xb3 */	"IM      0x33      ",
++	/* 0xb4 */	"IM      0x34      ",
++	/* 0xb5 */	"IM      0x35      ",
++	/* 0xb6 */	"IM      0x36      ",
++	/* 0xb7 */	"IM      0x37      ",
++	/* 0xb8 */	"IM      0x38      ",
++	/* 0xb9 */	"IM      0x39      ",
++	/* 0xba */	"IM      0x3a      ",
++	/* 0xbb */	"IM      0x3b      ",
++	/* 0xbc */	"IM      0x3c      ",
++	/* 0xbd */	"IM      0x3d      ",
++	/* 0xbe */	"IM      0x3e      ",
++	/* 0xbf */	"IM      0x3f      ",
++	/* 0xc0 */	"IM      0x40      ",
++	/* 0xc1 */	"IM      0x41      ",
++	/* 0xc2 */	"IM      0x42      ",
++	/* 0xc3 */	"IM      0x43      ",
++	/* 0xc4 */	"IM      0x44      ",
++	/* 0xc5 */	"IM      0x45      ",
++	/* 0xc6 */	"IM      0x46      ",
++	/* 0xc7 */	"IM      0x47      ",
++	/* 0xc8 */	"IM      0x48      ",
++	/* 0xc9 */	"IM      0x49      ",
++	/* 0xca */	"IM      0x4a      ",
++	/* 0xcb */	"IM      0x4b      ",
++	/* 0xcc */	"IM      0x4c      ",
++	/* 0xcd */	"IM      0x4d      ",
++	/* 0xce */	"IM      0x4e      ",
++	/* 0xcf */	"IM      0x4f      ",
++	/* 0xd0 */	"IM      0x50      ",
++	/* 0xd1 */	"IM      0x51      ",
++	/* 0xd2 */	"IM      0x52      ",
++	/* 0xd3 */	"IM      0x53      ",
++	/* 0xd4 */	"IM      0x54      ",
++	/* 0xd5 */	"IM      0x55      ",
++	/* 0xd6 */	"IM      0x56      ",
++	/* 0xd7 */	"IM      0x57      ",
++	/* 0xd8 */	"IM      0x58      ",
++	/* 0xd9 */	"IM      0x59      ",
++	/* 0xda */	"IM      0x5a      ",
++	/* 0xdb */	"IM      0x5b      ",
++	/* 0xdc */	"IM      0x5c      ",
++	/* 0xdd */	"IM      0x5d      ",
++	/* 0xde */	"IM      0x5e      ",
++	/* 0xdf */	"IM      0x5f      ",
++	/* 0xe0 */	"IM      0x60      ",
++	/* 0xe1 */	"IM      0x61      ",
++	/* 0xe2 */	"IM      0x62      ",
++	/* 0xe3 */	"IM      0x63      ",
++	/* 0xe4 */	"IM      0x64      ",
++	/* 0xe5 */	"IM      0x65      ",
++	/* 0xe6 */	"IM      0x66      ",
++	/* 0xe7 */	"IM      0x67      ",
++	/* 0xe8 */	"IM      0x68      ",
++	/* 0xe9 */	"IM      0x69      ",
++	/* 0xea */	"IM      0x6a      ",
++	/* 0xeb */	"IM      0x6b      ",
++	/* 0xec */	"IM      0x6c      ",
++	/* 0xed */	"IM      0x6d      ",
++	/* 0xee */	"IM      0x6e      ",
++	/* 0xef */	"IM      0x6f      ",
++	/* 0xf0 */	"IM      0x70      ",
++	/* 0xf1 */	"IM      0x71      ",
++	/* 0xf2 */	"IM      0x72      ",
++	/* 0xf3 */	"IM      0x73      ",
++	/* 0xf4 */	"IM      0x74      ",
++	/* 0xf5 */	"IM      0x75      ",
++	/* 0xf6 */	"IM      0x76      ",
++	/* 0xf7 */	"IM      0x77      ",
++	/* 0xf8 */	"IM      0x78      ",
++	/* 0xf9 */	"IM      0x79      ",
++	/* 0xfa */	"IM      0x7a      ",
++	/* 0xfb */	"IM      0x7b      ",
++	/* 0xfc */	"IM      0x7c      ",
++	/* 0xfd */	"IM      0x7d      ",
++	/* 0xfe */	"IM      0x7e      ",
++	/* 0xff */	"IM      0x7f      "
++};
++
++static void
++PrintOpCode(int opcode)
++{
++	fprintf(stdout, "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c(0x%02x) ",
++		   opcode_str[opcode][0],
++		   opcode_str[opcode][1],
++		   opcode_str[opcode][2],
++		   opcode_str[opcode][3],
++		   opcode_str[opcode][4],
++		   opcode_str[opcode][5],
++		   opcode_str[opcode][6],
++		   opcode_str[opcode][7],
++		   opcode_str[opcode][8],
++		   opcode_str[opcode][9],
++		   opcode_str[opcode][10],
++		   opcode_str[opcode][11],
++		   opcode_str[opcode][12],
++		   opcode_str[opcode][13],
++		   opcode_str[opcode][14],
++		   opcode_str[opcode][15],
++		   opcode_str[opcode][16],
++		   opcode_str[opcode][17],
++		   opcode
++		  );
++}
++
+ void trace_append(unsigned int pc, unsigned int sp, unsigned int top)
+ {
++	int		i;
+ 	struct trace_entry *entry = &tracebuffer[tracehigh];
+ 	tracehigh++;
+ 	if (tracehigh>=tracebufsize) {
+@@ -22,14 +322,75 @@ void trace_append(unsigned int pc, unsigned int sp, unsigned int top)
+ 	if (tracelow==tracehigh) {
+ 		tracelow++;
+ 	}
++	if (tracelow>=tracebufsize) {
++		tracelow=0;
++	}
+ 	unsigned int *spalign  = (unsigned int*)&_stack[0];
+ 	entry->pc = pc;
+ 	entry->opcode = _memory[pc];
+ 	entry->sp = sp;
+ 	entry->tos = top;
+ 	entry->nos = bswap_32(spalign[ (( ( sp & (STACK_SIZE-1) ) >>2) + 1 )] );
++	entry->nos2 = bswap_32(spalign[ (( ( sp & (STACK_SIZE-1) ) >>2) + 2 )] );
++	entry->nos3 = bswap_32(spalign[ (( ( sp & (STACK_SIZE-1) ) >>2) + 3 )] );
++	entry->nos4 = bswap_32(spalign[ (( ( sp & (STACK_SIZE-1) ) >>2) + 4 )] );
++	entry->nos5 = bswap_32(spalign[ (( ( sp & (STACK_SIZE-1) ) >>2) + 5 )] );
++	entry->nos6 = bswap_32(spalign[ (( ( sp & (STACK_SIZE-1) ) >>2) + 6 )] );
++	entry->nos7 = bswap_32(spalign[ (( ( sp & (STACK_SIZE-1) ) >>2) + 7 )] );
+     entry->tick = zpuino_get_tick_count();
+ 
++	if ((dump_flag_tick == 1) && (entry->tick >= dump_start_tick)) {
++		if (pass_cpunt == 0) {
++			dump_flag=1;
++			dump_flag_tick = 2;
++		}
++		else {
++			pass_cpunt--;
++		}
++	}
++	if ((dump_flag_addr == 1) && (entry->pc == dump_start_addr)) {
++		if (pass_cpunt == 0) {
++			dump_flag=1;
++			dump_flag_addr = 2;
++		}
++		else {
++			pass_cpunt--;
++		}
++	}
++	if (dump_flag == 1) {
++		if ( dump_flag_ext || (!(pc < 0x1000)))
++		{
++			if (--dump_lines == 0) {
++				dump_flag = 0;
++			}
++			fprintf(stdout, "[0x%08x] 0x%08X ",
++				   entry->tick,
++				   entry->pc
++				  );
++			PrintOpCode(entry->opcode);
++			fprintf(stdout, " <0x%08X> 0x%08X",
++				   entry->sp,
++				   entry->tos
++				  );
++			for(i = 0; i < dump_stack_depth; i++ ) {
++				fprintf(stdout, " 0x%08X",
++					bswap_32(spalign[ (( ( sp & (STACK_SIZE-1) ) >>2) + i + 1 )] )
++				  );
++				}
++			fprintf(stdout, "\n");
++		}
++	}
++	if ((entry->pc == break_addr)) {
++		// break point
++		if (pass_cpunt == 0) {
++			trace_dump();
++			zpu_halt();
++		}
++		else {
++			pass_cpunt--;
++		}
++	}
++
+ }
+ 
+ void trace_init(unsigned size)
+@@ -43,20 +404,23 @@ void trace_dump()
+ 
+ 	while (tracelow!=tracehigh) {
+ 		struct trace_entry *trace = &tracebuffer[tracelow];
+-
+-		printf("0x%07X 0x%02X 0x%08X 0x%08X 0x%08X 0x?u 0x%016x\n",
++		fprintf(stderr, "[0x%08x] 0x%08X %s (0x%02X) 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X\n",
++			   trace->tick,
+ 			   trace->pc,
++			   opcode_str[trace->opcode],
+ 			   trace->opcode,
+ 			   trace->sp,
+ 			   trace->tos,
+ 			   trace->nos,
+-			   trace->tick
++			   trace->nos2,
++			   trace->nos3,
++			   trace->nos4,
++			   trace->nos5,
++			   trace->nos6,
++			   trace->nos7
+ 			  );
+ 		tracelow++;
+         tracelow%=tracebufsize;
+ 	}
+-
+-
+-
+ }
+ 
+diff --git a/zpu/hdl/zpuino/simulator/trace.h b/zpu/hdl/zpuino/simulator/trace.h
+index 07ddfb5..8d4006b 100644
+--- a/zpu/hdl/zpuino/simulator/trace.h
++++ b/zpu/hdl/zpuino/simulator/trace.h
+@@ -7,6 +7,7 @@ struct trace_entry
+ 	unsigned char opcode;
+ 	unsigned sp;
+ 	unsigned tos, nos;
++	unsigned nos2, nos3, nos4, nos5, nos6, nos7;
+ 	unsigned tick;
+ };
+ 
+diff --git a/zpu/hdl/zpuino/simulator/uart.c b/zpu/hdl/zpuino/simulator/uart.c
+index 1f41adf..4f4f15a 100644
+--- a/zpu/hdl/zpuino/simulator/uart.c
++++ b/zpu/hdl/zpuino/simulator/uart.c
+@@ -283,7 +283,7 @@ void vte_uart_data(VteTerminal *vteterminal,
+ 		pthread_mutex_lock(&fifo_lock);
+ 		while (size--) {
+ 			fifodata[highmark]=text[i];
+-			//fprintf(stderr,"UART RX: %02x\n", text[i]);
++			// fprintf(stderr,"UART RX: %02x\n", text[i]);
+ 			i++;
+ 			highmark++;
+ 			if (highmark>=FIFO_SIZE)
+diff --git a/zpu/hdl/zpuino/simulator/zpuinointerface.c b/zpu/hdl/zpuino/simulator/zpuinointerface.c
+index cf83f42..1b3c38f 100644
+--- a/zpu/hdl/zpuino/simulator/zpuinointerface.c
++++ b/zpu/hdl/zpuino/simulator/zpuinointerface.c
+@@ -99,7 +99,10 @@ unsigned int zpuino_io_read_dummy(unsigned int address)
+ 
+ void zpuino_io_write_dummy(unsigned int address,unsigned int val)
+ {
++	extern unsigned _usp;
++	zpudebug("qqqq<%08x>", _usp);
+ 	printf("ERROR: Invalid IO write, address 0x%08x = 0x%08x (slot %d)\n",address,val, (address>>(MAXBITINCIO-IOSLOT_BITS))&0xf);
++	trace_dump();
+ }
+ 
+ void sign(int s)
+@@ -119,6 +122,7 @@ void sign(int s)
+ 
+ void byebye()
+ {
++//	trace_dump();
+ 	sign(0);
+ }
+ 
+diff --git a/zpu/hdl/zpuino/simulator/zpuinointerface.h b/zpu/hdl/zpuino/simulator/zpuinointerface.h
+index c81db35..6c76415 100644
+--- a/zpu/hdl/zpuino/simulator/zpuinointerface.h
++++ b/zpu/hdl/zpuino/simulator/zpuinointerface.h
+@@ -68,7 +68,7 @@ zpuino_device_t *zpuino_find_device_by_name(const char*name);
+ 	if (IOREG(address)==index) { method(address,value); return; }
+ 
+ #define ERRORREG(x) \
+-	fprintf(stderr, "%s: invalid register access %d\n",__FUNCTION__,IOREG(address)); \
++	fprintf(stderr, "%s: invalid register access %08x\n",__FUNCTION__,IOREG(address)); \
+ 	byebye();
+ 
+ #endif

@@ -1,0 +1,8 @@
+INTSTYLE=ise
+INFILE=E:\cq\papilio\ise\blink_led\blink_led.ncd
+OUTFILE=E:\cq\papilio\ise\blink_led\blink_led.bit
+FAMILY=Spartan6
+PART=xc6slx9-2tqg144
+WORKINGDIR=E:\cq\papilio\ise\blink_led
+LICENSE=ISE
+USER_INFO=174127756_176907464_210577712_024

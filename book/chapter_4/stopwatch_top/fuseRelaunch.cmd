@@ -1,0 +1,1 @@
+-intstyle "ise" -incremental -lib "unisims_ver" -lib "unimacro_ver" -lib "xilinxcorelib_ver" -lib "secureip" -o "E:/cq/papilio/ise/stopwatch_top/test_stopwatch_isim_beh.exe" -prj "E:/cq/papilio/ise/stopwatch_top/test_stopwatch_beh.prj" "work.test_stopwatch" "work.glbl" 

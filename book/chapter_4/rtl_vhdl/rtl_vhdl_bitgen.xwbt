@@ -1,0 +1,8 @@
+INTSTYLE=ise
+INFILE=D:\home\yokomizo\CQ\papilio\data\papilio_data\chapter_4\rtl_vhdl\rtl_vhdl.ncd
+OUTFILE=D:\home\yokomizo\CQ\papilio\data\papilio_data\chapter_4\rtl_vhdl\rtl_vhdl.bit
+FAMILY=Spartan6
+PART=xc6slx9-2tqg144
+WORKINGDIR=D:\home\yokomizo\CQ\papilio\data\papilio_data\chapter_4\rtl_vhdl
+LICENSE=ISE
+USER_INFO=174127756_176907464_210577712_024

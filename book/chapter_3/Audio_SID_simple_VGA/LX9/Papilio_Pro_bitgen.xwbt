@@ -1,0 +1,8 @@
+INTSTYLE=ise
+INFILE=C:\Users\yokomizo\Documents\Arduino\papilio_prg\c3\Audio_SID_simple\LX9\Papilio_Pro.ncd
+OUTFILE=C:\Users\yokomizo\Documents\Arduino\papilio_prg\c3\Audio_SID_simple\LX9\Papilio_Pro.bit
+FAMILY=Spartan6
+PART=xc6slx9-2tqg144
+WORKINGDIR=C:\Users\yokomizo\Documents\Arduino\papilio_prg\c3\Audio_SID_simple\LX9
+LICENSE=ISE
+USER_INFO=174127756_176907464_210577712_024

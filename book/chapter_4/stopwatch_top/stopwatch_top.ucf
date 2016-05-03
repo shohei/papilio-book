@@ -1,0 +1,46 @@
+
+
+NET "clk" LOC = P94;
+NET "com[3]" LOC = P85;
+NET "com[2]" LOC = P79;
+NET "com[1]" LOC = P56;
+NET "com[0]" LOC = P48;
+NET "seg_data[0]" LOC = P75;
+NET "seg_data[1]" LOC = P83;
+NET "seg_data[2]" LOC = P66;
+NET "seg_data[3]" LOC = P67;
+NET "seg_data[4]" LOC = P58;
+NET "seg_data[5]" LOC = P61;
+NET "seg_data[6]" LOC = P81;
+NET "seg_data[7]" LOC = P51;
+
+
+NET "seg_data[7]" IOSTANDARD = LVCMOS33;
+NET "seg_data[6]" IOSTANDARD = LVCMOS33;
+NET "seg_data[5]" IOSTANDARD = LVCMOS33;
+NET "seg_data[4]" IOSTANDARD = LVCMOS33;
+NET "seg_data[3]" IOSTANDARD = LVCMOS33;
+NET "seg_data[2]" IOSTANDARD = LVCMOS33;
+NET "seg_data[1]" IOSTANDARD = LVCMOS33;
+NET "seg_data[0]" IOSTANDARD = LVCMOS33;
+NET "com[3]" IOSTANDARD = LVCMOS33;
+NET "com[2]" IOSTANDARD = LVCMOS33;
+NET "com[1]" IOSTANDARD = LVCMOS33;
+NET "com[0]" IOSTANDARD = LVCMOS33;
+NET "clk" IOSTANDARD = LVCMOS33;
+NET "sw_0" IOSTANDARD = LVCMOS33;
+NET "sw_1" IOSTANDARD = LVCMOS33;
+NET "sw_2" IOSTANDARD = LVCMOS33;
+
+
+NET "sw_1" LOC = P55;
+NET "sw_0" LOC = P47;
+NET "sw_2" LOC = P50;
+
+# PlanAhead Generated IO constraints 
+
+NET "led" IOSTANDARD = LVCMOS33;
+
+# PlanAhead Generated physical constraints 
+
+NET "led" LOC = P112;

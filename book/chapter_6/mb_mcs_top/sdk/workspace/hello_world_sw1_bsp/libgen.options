@@ -1,0 +1,3 @@
+PROCESSOR=mb_mcs
+REPOSITORIES=
+HWSPEC=../mb_mcs_hw/system.xml

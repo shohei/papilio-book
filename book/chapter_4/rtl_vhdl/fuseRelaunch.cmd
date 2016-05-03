@@ -1,0 +1,1 @@
+-intstyle "ise" -incremental -lib "secureip" -o "E:/cq/papilio/ise/rtl_vhdl/test_rtl_vhdl_isim_beh.exe" -prj "E:/cq/papilio/ise/rtl_vhdl/test_rtl_vhdl_beh.prj" "work.test_rtl_vhdl" 

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="E:/cq/papilio/ise/stopwatch_top/test_stopwatch_top_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="test_stopwatch_top" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="20" />
+   <wvobject fp_name="/test_stopwatch_top/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/sw_0" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sw_0</obj_property>
+      <obj_property name="ObjectShortName">sw_0</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/start_stop" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">start_stop</obj_property>
+      <obj_property name="ObjectShortName">start_stop</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/start_stop_f" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">start_stop_f</obj_property>
+      <obj_property name="ObjectShortName">start_stop_f</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/sw_1" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sw_1</obj_property>
+      <obj_property name="ObjectShortName">sw_1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/clear" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clear</obj_property>
+      <obj_property name="ObjectShortName">clear</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/sw_2" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sw_2</obj_property>
+      <obj_property name="ObjectShortName">sw_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/rstb" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rstb</obj_property>
+      <obj_property name="ObjectShortName">rstb</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/clear_f" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clear_f</obj_property>
+      <obj_property name="ObjectShortName">clear_f</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/state" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">state[1:0]</obj_property>
+      <obj_property name="ObjectShortName">state[1:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/tmg_10ms" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">tmg_10ms</obj_property>
+      <obj_property name="ObjectShortName">tmg_10ms</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/t_10ms" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">t_10ms[3:0]</obj_property>
+      <obj_property name="ObjectShortName">t_10ms[3:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/t_10ms_en_o" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">t_10ms_en_o</obj_property>
+      <obj_property name="ObjectShortName">t_10ms_en_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/t_100ms" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">t_100ms[3:0]</obj_property>
+      <obj_property name="ObjectShortName">t_100ms[3:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/t_100ms_en_o" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">t_100ms_en_o</obj_property>
+      <obj_property name="ObjectShortName">t_100ms_en_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/t_1s" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">t_1s[3:0]</obj_property>
+      <obj_property name="ObjectShortName">t_1s[3:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/t_10s" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">t_10s[3:0]</obj_property>
+      <obj_property name="ObjectShortName">t_10s[3:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/uut/stopwatch/t_1s_en_o" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">t_1s_en_o</obj_property>
+      <obj_property name="ObjectShortName">t_1s_en_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/com" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">com[3:0]</obj_property>
+      <obj_property name="ObjectShortName">com[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test_stopwatch_top/seg_data" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">seg_data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">seg_data[7:0]</obj_property>
+   </wvobject>
+</wave_config>

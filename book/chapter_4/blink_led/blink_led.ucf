@@ -1,0 +1,10 @@
+
+# PlanAhead Generated physical constraints 
+
+NET "clk" LOC = P94;
+NET "resetb" LOC = P50;
+NET "led" LOC = P112;
+
+# PlanAhead Generated IO constraints 
+
+NET "resetb" PULLUP;
